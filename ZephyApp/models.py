@@ -69,15 +69,3 @@ class Box(models.Model):
         db_table = 'box'
 
 
-class Boxprofesional(models.Model):
-    idboxprofesionalcol = models.CharField(db_column='idBoxProfesionalcol', primary_key=True, max_length=45)  # Field name made lowercase.
-    box_idbox = models.ForeignKey(Box, models.DO_NOTHING, db_column='Box_idBox')  # Field name made lowercase.
-    profesional_idprofesional = models.ForeignKey('Profesional', models.DO_NOTHING, db_column='Profesional_idProfesional')  # Field name made lowercase.
-    fechaasignacion = models.DateField(db_column='fechaAsignacion', blank=True, null=True)  # Field name made lowercase.
-    fechatermino = models.DateField(db_column='fechaTermino', blank=True, null=True)  # Field name made lowercase.
-    horarioinicio = models.TimeField(db_column='horarioInicio', blank=True, null=True)  # Field name made lowercase.
-    horariofin = models.TimeField(db_column='horarioFin', blank=True, null=True)  # Field name made lowercase.
-
-    class Meta:
-
-        db_table = 'boxprofesional'

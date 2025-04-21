@@ -1,58 +1,89 @@
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Box List</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .box-card {
-            width: 100px;
-            height: 100px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            border-radius: 0.5rem;
-        }
-        .box-card:hover {
-            transform: scale(1.05);
-            transition: transform 0.2s ease-in-out;
-        }
-    </style>
-</head>
-<body class="bg-light">
-    <div class="container my-5">
-        <h2 class="mb-4 text-center">Disponibilidad de Boxes</h2>
+{% extends "base.html" %}
 
-        <!-- Leyenda -->
-        <div class="mb-4 d-flex justify-content-center gap-4">
-            <span class="badge bg-success">Disponible</span>
-            <span class="badge bg-danger">Ocupado</span>
-            <span class="badge bg-warning text-dark">No Disponible</span>
-        </div>
+{% block title %}Disponibilidad de Boxes{% endblock %}
 
-        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3 justify-content-center">
-            {% for box in boxes %}
-                <div class="col d-flex justify-content-center">
-                    <a href="{% url 'cambiar_estado_box' box.idbox %}" class="text-decoration-none text-white">
-                        <div class="box-card 
-                            {% if box.estadobox_idestadobox.nombre == 'Disponible' %}
-                                bg-success
-                            {% elif box.estadobox_idestadobox.nombre == 'Ocupado' %}
-                                bg-danger
-                            {% elif box.estadobox_idestadobox.nombre == 'No disponible' %}
-                                bg-warning text-dark
-                            {% else %}
-                                bg-secondary
-                            {% endif %}
-                        ">
-                            Box {{ box.numerobox }}
-                            <small class="fw-normal">{{ box.estadobox_idestadobox.nombre }}</small>
-                        </div>
-                    </a>
-                </div>
-            {% endfor %}
-        </div>
+{% block content %}
+<h2 class="mb-4 text-center">Disponibilidad de Boxes</h2>
+
+<!-- Leyenda -->
+<div class="mb-4 d-flex justify-content-center gap-3">
+  <span class="badge bg-success">Disponible</span>
+  <span class="badge bg-danger">Ocupado</span>
+  <span class="badge bg-warning text-dark">No Disponible</span>
+</div>
+
+<style>
+  .box-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+
+  .pasillo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    width: 250px; /* Ajusta el ancho del pasillo */
+  }
+
+  .pasillo-separator {
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    color: #555;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+  }
+
+  .box-card {
+    width: 60px; /* Ajusta el tamaño de cada box */
+    height: 60px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    text-align: center;
+    color: white;
+    text-decoration: none;
+  }
+
+  .bg-warning.text-dark {
+    color: #212529 !important;
+  }
+</style>
+
+<!-- Grilla con separación por pasillos -->
+<div class="box-grid">
+  {% for pasillo, boxes_grupo in boxes_por_pasillo.items %}
+    <div class="pasillo-container">
+      <div class="pasillo-separator">{{ pasillo }}</div>
+      <div class="box-grid">
+        {% for box in boxes_grupo %}
+          <a href="{% url 'cambiar_estado_box' box.idbox %}" class="
+            box-card
+            {% if box.estadobox_idestadobox.nombre == 'Disponible' %}
+              bg-success
+            {% elif box.estadobox_idestadobox.nombre == 'Ocupado' %}
+              bg-danger
+            {% elif box.estadobox_idestadobox.nombre == 'No disponible' %}
+              bg-warning text-dark
+            {% else %}
+              bg-secondary
+            {% endif %}
+          ">
+            Box {{ box.numerobox }}
+          </a>
+        {% endfor %}
+      </div>
     </div>
-</body>
-</html>
+  {% endfor %}
+</div>
+
+{% endblock %}
