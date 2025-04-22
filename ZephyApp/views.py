@@ -2,6 +2,15 @@ from django.shortcuts import render, get_object_or_404, redirect
 from collections import defaultdict
 from .models import *  # Asegúrate de que el modelo Box esté importado
 
+def dashboard(request):
+    box_disponibles = Box.objects.filter(estadobox_idestadobox='1').count()
+    box_ocupados = Box.objects.filter(estadobox_idestadobox='2').count()
+    box_no_disponibles = Box.objects.filter(estadobox_idestadobox='3').count()
+    return render(request, 'dashboard.html', {
+        'box_disponibles': box_disponibles,
+        'box_ocupados': box_ocupados,
+        'box_no_disponibles': box_no_disponibles,
+    })
 def box_list(request):
     boxes = Box.objects.all().order_by('numerobox')
     boxes_por_pasillo = defaultdict(list)
