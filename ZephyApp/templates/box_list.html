@@ -31,8 +31,7 @@
     padding: 10px;
     border: 2px solid #ccc;
     border-radius: 10px;
-    width: 250px; /* Ajusta el ancho del pasillo */
-  }
+    width: 250px; 
 
   .pasillo-separator {
     width: 100%;
@@ -45,7 +44,7 @@
   }
 
   .box-card {
-    width: 60px; /* Ajusta el tamaño de cada box */
+    width: 60px; 
     height: 60px;
     border-radius: 10px;
     display: flex;
@@ -63,7 +62,6 @@
 
 </style>
 
-<!-- Grilla con separación por pasillos -->
 <div class="box-grid">
   {% for pasillo, boxes_grupo in boxes_por_pasillo.items %}
     <div class="pasillo-container">
@@ -100,13 +98,10 @@ socket.onmessage = function(event) {
 
     const boxElement = document.getElementById('box-' + data.box_id);
     if (boxElement) {
-        // Elimina todas las posibles clases de estado anteriores
         boxElement.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'text-dark', 'bg-secondary');
 
-        // Agrega la nueva clase de estado
         boxElement.classList.add(data.new_status_class);
-        showToast(`El box ${data.box_id} cambió a ${data.estado}`);
-        // Si el nuevo estado es warning (que es amarillo con texto oscuro)
+        showToast(`Hubo una actualización en el box ${data.box_id}`);
         if (data.new_status_class === 'bg-warning') {
             boxElement.classList.add('text-dark');
         }
@@ -131,8 +126,8 @@ socket.onclose = function() {
     document.getElementById('live-clock').textContent = timeString;
   }
 
-  setInterval(updateClock, 1000); // Actualiza cada segundo
-  window.onload = updateClock; // Muestra la hora inmediatamente al cargar
+  setInterval(updateClock, 1000); 
+  window.onload = updateClock;
 </script>
 
 

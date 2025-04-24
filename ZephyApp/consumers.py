@@ -18,8 +18,7 @@ class BoxConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        # Aquí puedes manejar mensajes que vengan desde el cliente si quieres
-        # Por ejemplo reenviarlos al grupo
+
         await self.channel_layer.group_send(
             self.group_name,
             {

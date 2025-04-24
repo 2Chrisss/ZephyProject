@@ -6,5 +6,5 @@ class ZephyAppConfig(AppConfig):
 
     def ready(self):
         import ZephyApp.signals
-        from ZephyApp.tasks import start_task  #  importa la función
-        start_task()  #  inicia el hilo de revisión de boxes
+        from ZephyApp.tasks import start_task  
+        start_task()  

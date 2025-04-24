@@ -24,7 +24,7 @@
     }
 
     .main-content {
-      margin-left: 80px; /* debe coincidir con el ancho del sidebar */
+      margin-left: 80px; 
       width: calc(100% - 80px);
       min-height: 100vh;
     }
@@ -46,10 +46,9 @@
     let isToastVisible = false;
 
     function showToast(message) {
-      // Si ya hay un toast visible, no creamos uno nuevo
       if (isToastVisible) {
         console.log("Ya hay un toast visible, no se crea uno nuevo.");
-        return; // No crear un nuevo toast
+        return; 
       }
 
       console.log("Creando toast con mensaje:", message);
@@ -74,16 +73,16 @@
 
       toastContainer.appendChild(toast);
 
-      // Inicializar y mostrar el toast con Bootstrap
+      
       const bootstrapToast = new bootstrap.Toast(toast);
       bootstrapToast.show();
 
-      // Marcar el toast como visible
+      
       isToastVisible = true;
 
-      // Escuchar el evento de cierre del toast
+      
       bootstrapToast._element.addEventListener('hidden.bs.toast', () => {
-        isToastVisible = false; // Permitir la creación de nuevos toasts cuando este se cierre
+        isToastVisible = false; 
       });
     }
   </script>
@@ -91,16 +90,16 @@
 <body class="bg-light m-0 p-0">
   <div id="toast-container"></div>
 
-  <!-- Sidebar -->
+
   {% include "includes/sidebar.html" %}
 
-  <!-- Contenido principal -->
+
   <div class="main-content d-flex flex-column">
 
-    <!-- Header -->
+
     {% include "includes/header.html" %}
 
-    <!-- Contenido dinámico -->
+ 
     <div class="container my-4">
       {% block content %}
       {% endblock %}

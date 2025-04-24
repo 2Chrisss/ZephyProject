@@ -9,14 +9,12 @@ def notificar_cambio_box(sender, instance, **kwargs):
     channel_layer = get_channel_layer()
     estado = instance.estadobox_idestadobox.nombre
 
-    # Define la clase CSS según el estado
     status_class = 'bg-success' if estado == 'Disponible' else (
         'bg-danger' if estado == 'Ocupado' else 'bg-warning text-dark'
     )
 
-    # Envía el mensaje al grupo de WebSocket
     async_to_sync(channel_layer.group_send)(
-        "boxes_updates",  # Grupo que están escuchando los clientes
+        "boxes_updates",  
         {
             'type': 'box_update',
             'box_id': instance.idbox,

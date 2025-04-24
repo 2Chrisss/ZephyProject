@@ -3,5 +3,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('ZephyApp.urls')),  # Incluye las URLs de ZephyApp
+    path('', include('ZephyApp.urls')), 
 ]

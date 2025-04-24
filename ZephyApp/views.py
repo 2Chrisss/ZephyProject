@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from collections import defaultdict
-from .models import *  # Asegúrate de que el modelo Box esté importado
+from .models import *  
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.utils import timezone
@@ -21,7 +21,7 @@ def box_list(request):
     boxes_por_pasillo = defaultdict(list)
 
     for box in boxes:
-        pasillo = box.ubicacionbox  # "Pasillo 1", "Pasillo 2", etc.
+        pasillo = box.ubicacionbox  
         boxes_por_pasillo[pasillo].append(box)
     return render(request, 'box_list.html', {
         'boxes_por_pasillo': dict(boxes_por_pasillo)
@@ -47,11 +47,9 @@ def cambiar_estado_box(request, box_id):
         box.estadobox_idestadobox = nuevo_estado
         box.save()
 
-        # Notifica a los clientes WebSocket
-        # Notifica a los clientes WebSocket
         channel_layer = get_channel_layer()
 
-        # Determina la clase CSS correspondiente
+
         status_classes = {
             'Disponible': 'bg-success',
             'Ocupado': 'bg-danger',
@@ -78,7 +76,6 @@ def cambiar_estado_box(request, box_id):
         'estados': estados
     })
 
-# Función que devuelve la clase CSS adecuada según el estado
 def get_css_class_for_status(status_name):
     if status_name == 'Disponible':
         return 'bg-success'
