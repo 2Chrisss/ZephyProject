@@ -3,13 +3,16 @@
 {% block title %}Disponibilidad de Boxes{% endblock %}
 
 {% block content %}
-<h2 class="mb-4 text-center">Disponibilidad de Boxes</h2>
-
 <!-- Leyenda -->
 <div class="mb-4 d-flex justify-content-center gap-3">
   <span class="badge bg-success">Disponible</span>
   <span class="badge bg-danger">Ocupado</span>
   <span class="badge bg-warning text-dark">No Disponible</span>
+</div>
+
+<!-- Hora en vivo -->
+<div class="mb-4 text-center">
+  <strong>Hora actual:</strong> <span id="live-clock"></span>
 </div>
 
 <style>
@@ -57,6 +60,7 @@
   .bg-warning.text-dark {
     color: #212529 !important;
   }
+
 </style>
 
 <!-- Grilla con separación por pasillos -->
@@ -66,24 +70,70 @@
       <div class="pasillo-separator">{{ pasillo }}</div>
       <div class="box-grid">
         {% for box in boxes_grupo %}
-          <a href="{% url 'cambiar_estado_box' box.idbox %}" class="
-            box-card
-            {% if box.estadobox_idestadobox.nombre == 'Disponible' %}
-              bg-success
-            {% elif box.estadobox_idestadobox.nombre == 'Ocupado' %}
-              bg-danger
-            {% elif box.estadobox_idestadobox.nombre == 'No disponible' %}
-              bg-warning text-dark
-            {% else %}
-              bg-secondary
-            {% endif %}
-          ">
-            Box {{ box.numerobox }}
-          </a>
+          <a href="{% url 'cambiar_estado_box' box.idbox %}" id="box-{{ box.idbox }}" class="
+          box-card
+          {% if box.estadobox_idestadobox.nombre == 'Disponible' %}
+            bg-success
+          {% elif box.estadobox_idestadobox.nombre == 'Ocupado' %}
+            bg-danger
+          {% elif box.estadobox_idestadobox.nombre == 'No disponible' %}
+            bg-warning text-dark
+          {% else %}
+            bg-secondary
+          {% endif %}
+        ">
+          Box {{ box.numerobox }}
+        </a>
         {% endfor %}
       </div>
     </div>
   {% endfor %}
 </div>
+
+
+<script>
+const socket = new WebSocket('ws://' + window.location.host + '/ws/boxes/');
+
+socket.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    console.log('Mensaje recibido:', data);
+
+    const boxElement = document.getElementById('box-' + data.box_id);
+    if (boxElement) {
+        // Elimina todas las posibles clases de estado anteriores
+        boxElement.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'text-dark', 'bg-secondary');
+
+        // Agrega la nueva clase de estado
+        boxElement.classList.add(data.new_status_class);
+        showToast(`El box ${data.box_id} cambió a ${data.estado}`);
+        // Si el nuevo estado es warning (que es amarillo con texto oscuro)
+        if (data.new_status_class === 'bg-warning') {
+            boxElement.classList.add('text-dark');
+        }
+    }
+};
+
+socket.onopen = function() {
+    console.log('WebSocket conectado');
+};
+
+socket.onclose = function() {
+    console.log('WebSocket desconectado');
+};
+</script>
+<script>
+  function updateClock() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const timeString = `${hours}:${minutes}:${seconds}`;
+    document.getElementById('live-clock').textContent = timeString;
+  }
+
+  setInterval(updateClock, 1000); // Actualiza cada segundo
+  window.onload = updateClock; // Muestra la hora inmediatamente al cargar
+</script>
+
 
 {% endblock %}
