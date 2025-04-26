@@ -4,6 +4,7 @@ from .models import *
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.utils import timezone
+from datetime import time
 
 def dashboard(request):
     box_disponibles = Box.objects.filter(estadobox_idestadobox='1').count()
@@ -14,19 +15,57 @@ def dashboard(request):
         'box_ocupados': box_ocupados,
         'box_no_disponibles': box_no_disponibles,
     })
+def calcular_porcentaje_ocupacion(box):
+    ocupaciones = Boxprofesional.objects.filter(
+        box_idbox=box,
+        fechaasignacion__lte=timezone.now().date(),
+        fechatermino__gte=timezone.now().date()
+    )
+    total_am = 0
+    total_pm = 0
+
+    for ocupacion in ocupaciones:
+        if ocupacion.horarioinicio < time(12, 0):  # AM
+            fin_am = min(ocupacion.horariofin, time(12, 0))
+            total_am += (fin_am.hour * 60 + fin_am.minute) - (ocupacion.horarioinicio.hour * 60 + ocupacion.horarioinicio.minute)
+        if ocupacion.horariofin > time(12, 0):  # PM
+            inicio_pm = max(ocupacion.horarioinicio, time(12, 0))
+            total_pm += (ocupacion.horariofin.hour * 60 + ocupacion.horariofin.minute) - (inicio_pm.hour * 60 + inicio_pm.minute)
+
+    porcentaje_am = (total_am / (12 * 60)) * 100  # 12 horas en minutos
+    porcentaje_pm = (total_pm / (5 * 60)) * 100
+
+    return round(porcentaje_am, 2), round(porcentaje_pm, 2)
+
 def box_list(request):
-    
-    
-    boxes = Box.objects.all().order_by('numerobox')
+    estado = request.GET.get('estado', '')
+    pasillo = request.GET.get('pasillo', '')
+
+    # Obtener todos los pasillos únicos antes del filtro
+    todos_los_pasillos = Box.objects.exclude(idbox__isnull=True).values_list('ubicacionbox', flat=True).distinct()
+
+    # Aplicar filtros
+    boxes = Box.objects.exclude(idbox__isnull=True).order_by('numerobox')
+    if estado:
+        boxes = boxes.filter(estadobox_idestadobox=estado)
+    if pasillo:
+        boxes = boxes.filter(ubicacionbox=pasillo)
+
     boxes_por_pasillo = defaultdict(list)
-
     for box in boxes:
-        pasillo = box.ubicacionbox  
-        boxes_por_pasillo[pasillo].append(box)
-    return render(request, 'box_list.html', {
-        'boxes_por_pasillo': dict(boxes_por_pasillo)
+        pasillo_box = box.ubicacionbox
+        porcentaje_am, porcentaje_pm = calcular_porcentaje_ocupacion(box)
+        boxes_por_pasillo[pasillo_box].append({
+            'box': box,
+            'porcentaje_am': porcentaje_am,
+            'porcentaje_pm': porcentaje_pm
+        })
 
+    return render(request, 'box_list.html', {
+        'boxes_por_pasillo': dict(boxes_por_pasillo),
+        'todos_los_pasillos': todos_los_pasillos,
     })
+    
 def get_css_class_for_status(status_name):
     if status_name == 'Disponible':
         return 'bg-success'
@@ -85,3 +124,4 @@ def get_css_class_for_status(status_name):
         return 'bg-warning text-dark'
     else:
         return 'bg-secondary'
+
