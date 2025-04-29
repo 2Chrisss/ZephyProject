@@ -4,7 +4,7 @@ from .models import *
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.utils import timezone
-from datetime import time
+from datetime import time,datetime
 
 def dashboard(request):
     box_disponibles = Box.objects.filter(estadobox_idestadobox='1').count()
@@ -15,24 +15,30 @@ def dashboard(request):
         'box_ocupados': box_ocupados,
         'box_no_disponibles': box_no_disponibles,
     })
-def calcular_porcentaje_ocupacion(box):
+def calcular_porcentaje_ocupacion(box, fecha=None):
+    if fecha:
+        fecha_filtro = timezone.datetime.strptime(fecha, "%Y-%m-%d").date()
+    else:
+        fecha_filtro = timezone.now().date()
+
     ocupaciones = Boxprofesional.objects.filter(
         box_idbox=box,
-        fechaasignacion__lte=timezone.now().date(),
-        fechatermino__gte=timezone.now().date()
+        fechaasignacion__lte=fecha_filtro,
+        fechatermino__gte=fecha_filtro
     )
+
     total_am = 0
     total_pm = 0
 
     for ocupacion in ocupaciones:
-        if ocupacion.horarioinicio < time(12, 0):  # AM
+        if ocupacion.horarioinicio < time(12, 0):
             fin_am = min(ocupacion.horariofin, time(12, 0))
             total_am += (fin_am.hour * 60 + fin_am.minute) - (ocupacion.horarioinicio.hour * 60 + ocupacion.horarioinicio.minute)
-        if ocupacion.horariofin > time(12, 0):  # PM
+        if ocupacion.horariofin > time(12, 0):
             inicio_pm = max(ocupacion.horarioinicio, time(12, 0))
             total_pm += (ocupacion.horariofin.hour * 60 + ocupacion.horariofin.minute) - (inicio_pm.hour * 60 + inicio_pm.minute)
 
-    porcentaje_am = (total_am / (12 * 60)) * 100  # 12 horas en minutos
+    porcentaje_am = (total_am / (12 * 60)) * 100
     porcentaje_pm = (total_pm / (5 * 60)) * 100
 
     return round(porcentaje_am, 2), round(porcentaje_pm, 2)
@@ -40,31 +46,60 @@ def calcular_porcentaje_ocupacion(box):
 def box_list(request):
     estado = request.GET.get('estado', '')
     pasillo = request.GET.get('pasillo', '')
+    fecha_str = request.GET.get('fecha', '')
+    hora_str = request.GET.get('hora', '')
 
-    # Obtener todos los pasillos únicos antes del filtro
     todos_los_pasillos = Box.objects.exclude(idbox__isnull=True).values_list('ubicacionbox', flat=True).distinct()
 
-    # Aplicar filtros
     boxes = Box.objects.exclude(idbox__isnull=True).order_by('numerobox')
+
     if estado:
         boxes = boxes.filter(estadobox_idestadobox=estado)
     if pasillo:
         boxes = boxes.filter(ubicacionbox=pasillo)
 
+    # Manejo de fecha y hora
+    if fecha_str:
+        try:
+            fecha = datetime.strptime(fecha_str, "%Y-%m-%d").date()
+        except ValueError:
+            fecha = timezone.now().date()
+    else:
+        fecha = timezone.now().date()
+
+    if hora_str:
+        try:
+            hora = datetime.strptime(hora_str, "%H:%M").time()
+        except ValueError:
+            hora = None
+    else:
+        hora = None
+
     boxes_por_pasillo = defaultdict(list)
     for box in boxes:
-        pasillo_box = box.ubicacionbox
-        porcentaje_am, porcentaje_pm = calcular_porcentaje_ocupacion(box)
-        boxes_por_pasillo[pasillo_box].append({
-            'box': box,
-            'porcentaje_am': porcentaje_am,
-            'porcentaje_pm': porcentaje_pm
-        })
+        ocupaciones = Boxprofesional.objects.filter(
+            box_idbox=box,
+            fechaasignacion__lte=fecha,
+            fechatermino__gte=fecha
+        )
+        if hora:
+            ocupaciones = ocupaciones.filter(horarioinicio__lte=hora, horariofin__gte=hora)
+
+        if ocupaciones.exists() or not fecha_str:
+            porcentaje_am, porcentaje_pm = calcular_porcentaje_ocupacion(box, fecha_str)
+            boxes_por_pasillo[box.ubicacionbox].append({
+                'box': box,
+                'porcentaje_am': porcentaje_am,
+                'porcentaje_pm': porcentaje_pm
+            })
 
     return render(request, 'box_list.html', {
         'boxes_por_pasillo': dict(boxes_por_pasillo),
         'todos_los_pasillos': todos_los_pasillos,
+        'fecha_filtro': fecha_str,
+        'hora_filtro': hora_str,
     })
+
     
 def get_css_class_for_status(status_name):
     if status_name == 'Disponible':
@@ -114,14 +149,4 @@ def cambiar_estado_box(request, box_id):
         'box': box,
         'estados': estados
     })
-
-def get_css_class_for_status(status_name):
-    if status_name == 'Disponible':
-        return 'bg-success'
-    elif status_name == 'Ocupado':
-        return 'bg-danger'
-    elif status_name == 'No disponible':
-        return 'bg-warning text-dark'
-    else:
-        return 'bg-secondary'
 

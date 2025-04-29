@@ -30,23 +30,40 @@
           {% endfor %}
         </select>
       </div>
-
-      <div>
-        <button type="submit" class="btn btn-primary">Filtrar</button>
+      <div class="d-flex flex-column align-items-center">
+        <div class="p-2 mb-2 rounded" style="background-color: #3E6CD3; color: white; font-weight: bold;">
+          Filtrar por fecha
+        </div>
+        <input type="date" id="fecha" name="fecha" class="form-control"
+               value="{{ request.GET.fecha|default_if_none:'' }}">
+      </div>
+      
+      <div class="d-flex flex-column align-items-center">
+        <div class="p-2 mb-2 rounded" style="background-color: #3E6CD3; color: white; font-weight: bold;">
+          Filtrar por horario
+        </div>
+        <select id="horario" name="horario" class="form-control">
+          <option value="" {% if horario_filtro == '' %}selected{% endif %}>Todos</option>
+          <option value="AM" {% if horario_filtro == 'AM' %}selected{% endif %}>AM</option>
+          <option value="PM" {% if horario_filtro == 'PM' %}selected{% endif %}>PM</option>
+        </select>
+      </div>
+      <div class="d-flex justify-content-center mt-3">
+        <button type="submit" class="btn btn-primary w-100 w-sm-auto">Filtrar</button>
       </div>
     </div>
   </form>
   <div class="d-flex flex-column align-items-center mt-3 mt-lg-0">
-    <div class="mb-2 d-flex gap-2">
+    <div class="mb-2 d-flex gap-2 flex-wrap justify-content-center">
       <span class="badge bg-success">Disponible</span>
       <span class="badge bg-danger">Ocupado</span>
       <span class="badge bg-warning text-dark">No Disponible</span>
     </div>
+  
     <div>
       <strong>Hora actual:</strong> <span id="live-clock"></span>
     </div>
   </div>
-
 </div>
 
 <style>
