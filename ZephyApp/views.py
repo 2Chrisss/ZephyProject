@@ -49,14 +49,15 @@ def box_list(request):
     fecha_str = request.GET.get('fecha', '')
     horario = request.GET.get('horario', '')  
 
-    todos_los_pasillos = Box.objects.exclude(idbox__isnull=True).values_list('ubicacionbox', flat=True).distinct()
-
+    todos_los_pasillos = Pasillobox.objects.values_list('nombre', flat=True).distinct()
+    pasillos=  Pasillobox.objects.all().order_by('idpasillobox')
     boxes = Box.objects.exclude(idbox__isnull=True).order_by('numerobox')
 
     if estado:
         boxes = boxes.filter(estadobox_idestadobox=estado)
     if pasillo:
-        boxes = boxes.filter(ubicacionbox=pasillo)
+        boxes = boxes.filter(pasillobox_idpasillobox__nombre=pasillo)
+
 
     if fecha_str:
         try:
@@ -78,10 +79,10 @@ def box_list(request):
         elif horario == 'PM':
             ocupaciones = ocupaciones.filter(horarioinicio__gte=time(12, 0))
 
-
         if ocupaciones.exists() or not fecha_str:
             porcentaje_am, porcentaje_pm = calcular_porcentaje_ocupacion(box, fecha_str)
-            boxes_por_pasillo[box.ubicacionbox].append({
+            pasillo_nombre = box.pasillobox_idpasillobox.nombre
+            boxes_por_pasillo[pasillo_nombre].append({
                 'box': box,
                 'porcentaje_am': porcentaje_am,
                 'porcentaje_pm': porcentaje_pm

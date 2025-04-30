@@ -67,88 +67,68 @@
 </div>
 
 <style>
-  .box-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 20px;
-  }
+.box-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
 
-  .pasillo-container {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 250px;
-    min-width: 200px;
-    max-width: 400px;
-    border: 2px solid #ccc;
-    border-radius: 10px;
-    padding: 10px;
-    box-sizing: border-box;
-  }
+.pasillo-container {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  padding: 15px;
+  background-color: #f8f9fa;
+}
 
-  .pasillo-separator {
-    width: 100%;
-    text-align: center;
-    font-weight: bold;
-    color: #555;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 10px;
-    margin-bottom: 10px;
-  }
+.pasillo-separator {
+  text-align: center;
+  font-weight: bold;
+  color: #333;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 8px;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+}
 
+.inner-box-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 10px;
+}
+
+.box-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  gap: 5px;
+  min-height: 70px;
+  font-size: 12px;
+}
+
+.box-card div {
+  font-size: 11px;
+}
+
+.bg-warning.text-dark {
+  color: #212529 !important;
+}
+
+@media (max-width: 576px) {
   .inner-box-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    width: 100%;
-    justify-content: center;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
   }
+}
 
-  .box-card {
-    flex: 1 1 calc(45% - 10px);
-    height: 80px;
-    max-width: 100px;
-    min-width: 60px;
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    text-align: center;
-    color: white;
-    text-decoration: none;
-    gap: 5px;
-    padding: 5px;
-    font-size: 12px;
-  }
-
-  .box-card div {
-    font-size: 10px;
-  }
-
-  .bg-warning.text-dark {
-    color: #212529 !important;
-  }
-
-  @media (max-width: 768px) {
-    .pasillo-container {
-      flex: 1 1 100%;
-      max-width: 100%;
-    }
-    .box-card {
-      flex: 1 1 calc(30% - 10px);
-    }
-  }
-
-  @media (max-width: 480px) {
-    .box-card {
-      flex: 1 1 calc(45% - 10px);
-      max-width: 80px;
-    }
-  }
 </style>
 <div class="box-grid">
   {% for pasillo, boxes_grupo in boxes_por_pasillo.items %}
@@ -187,7 +167,7 @@ socket.onmessage = function(event) {
     if (boxElement) {
         boxElement.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'text-dark', 'bg-secondary');
         boxElement.classList.add(data.new_status_class);
-        showToast(`Hubo una actualización en el box ${data.box_id}`);
+        showToast(`Hubo una actualización en el box ${data.box_number}`);
         if (data.new_status_class === 'bg-warning') {
             boxElement.classList.add('text-dark');
         }
