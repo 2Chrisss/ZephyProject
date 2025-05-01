@@ -178,7 +178,7 @@ class Box(models.Model):
 
 
 class Boxprofesional(models.Model):
-    idboxprofesionalcol = models.CharField(db_column='idBoxProfesionalcol', primary_key=True, max_length=45)  # Field name made lowercase.
+    idboxprofesionalcol = models.AutoField(db_column='idBoxProfesionalcol', primary_key=True)  # Field name made lowercase.
     box_idbox = models.ForeignKey(Box, models.DO_NOTHING, db_column='Box_idBox')  # Field name made lowercase.
     profesional_idprofesional = models.ForeignKey('Profesional', models.DO_NOTHING, db_column='Profesional_idProfesional')  # Field name made lowercase.
     fechaasignacion = models.DateField(db_column='fechaAsignacion', blank=True, null=True)  # Field name made lowercase.
