@@ -45,7 +45,7 @@ def check_and_update_boxes():
                             'type': 'box_update',
                             'box_id': box.idbox,
                             'box_number': box.numerobox,
-                            'new_status_class': '#d4afb9'  # Color para "NO Disponible"
+                            'new_status_class': 'bg-ocupado'  
 
                         }
                     )
@@ -77,7 +77,7 @@ def check_and_update_boxes():
                             'type': 'box_update',
                             'box_id': box.idbox,
                             'box_number': box.numerobox,
-                            'new_status_class': '#abc4ff'  # Color para "Ocupado"
+                            'new_status_class': 'bg-disponible' 
                         }
                     )
 
