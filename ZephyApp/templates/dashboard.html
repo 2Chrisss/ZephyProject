@@ -1,40 +1,46 @@
 {% extends "base.html" %}
 
 {% block title %}Dashboard Principal{% endblock %}
-
 {% block content %}
+<h1 class="display-5 text-center">Dashboard Principal</h1>
 <div class="container mt-4">
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card text-black  mb-3">
-                <div class="card-header">Boxes Disponibles</div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ box_disponibles }}</h5>
-                    <p class="card-text">Cantidad de boxes disponibles actualmente.</p>
+    <div class="row justify-content-end">
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-4">
+                    <a href="{% url 'box_list' %}?estado=1" class="text-decoration-none">
+                        <div class="card text-black mb-3" style="background-color: #edf2fb">
+                            <div class="card-header">Boxes Disponibles</div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ box_disponibles }}</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'box_list' %}?estado=2" class="text-decoration-none">
+                        <div class="card text-black mb-3" style="background-color: #abc4ff">
+                            <div class="card-header">Boxes Ocupados</div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ box_ocupados }}</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'box_list' %}?estado=3" class="text-decoration-none">
+                        <div class="card text-black mb-3" style="background-color: #d4afb9">
+                            <div class="card-header">Boxes No Disponibles</div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ box_no_disponibles }}</h5>
+                            </div>
+                        </div>
+                    </a>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-black mb-3">
-                <div class="card-header">Boxes Ocupados</div>
-                <div class="card-body">
-                    <h5 class="card-title">{{box_ocupados }}</h5>
-                    <p class="card-text">Cantidad de boxes ocupados actualmente.</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-black mb-3">
-                <div class="card-header">Boxes No Disponibles</div>
-                <div class="card-body">
-                    <h5 class="card-title">{{ box_no_disponibles }}</h5>
-                    <p class="card-text">Cantidad de boxes no disponibles actualmente.</p>
-                </div>
+            <div class="text-center">
+                <a href="{% url 'box_list' %}" class="btn btn-primary">Detalle</a>
             </div>
         </div>
     </div>
-    <div class="text-center">
-        <a href="{% url 'box_list' %}" class="btn btn-primary">Detalle</a>
-    </div>
-</div>
 {% endblock %}

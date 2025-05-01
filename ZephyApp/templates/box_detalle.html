@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle del Box{% endblock %}
+
+{% block content %}
+<h1>Detalle del Box {{ box.numerobox }}</h1>
+<p><strong>Estado:</strong> {{ box.estadobox_idestadobox.nombre }}</p>
+<p><strong>Tipo:</strong> {{ box.tipobox_idtipobox.nombre }}</p>
+
+<h2>Horas Totales por Doctor</h2>
+<ul>
+    {% for doctor, horas in horas_por_doctor.items %}
+    <li><strong>{{ doctor }}:</strong> {{ horas }}</li>
+    {% endfor %}
+</ul>
+
+<h2>Ocupaciones</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Doctor</th>
+            <th>Fecha</th>
+            <th>Horario</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ocupacion in ocupaciones %}
+        <tr>
+            <td>{{ ocupacion.profesional.nombre }}</td>
+            <td>{{ ocupacion.fechaasignacion }}</td>
+            <td>{{ ocupacion.horarioinicio }} - {{ ocupacion.horariofin }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<div class="text-center">
+    <a href="{% url 'box_list' %}" class="btn btn-primary">Volver</a>
+</div>
+
+{% endblock %}

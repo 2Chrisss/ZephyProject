@@ -94,52 +94,26 @@ def box_list(request):
         'fecha_filtro': fecha_str,
         'horario_filtro': horario,
     })
-def get_css_class_for_status(status_name):
-    if status_name == 'Disponible':
-        return 'bg-success'
-    elif status_name == 'Ocupado':
-        return 'bg-danger'
-    elif status_name == 'No disponible':
-        return 'bg-warning text-dark'
-    else:
-        return 'bg-secondary'
-
-def cambiar_estado_box(request, box_id):
-    box = get_object_or_404(Box, pk=box_id)
-    estados = Estadobox.objects.all()
-
-    if request.method == 'POST':
-        nuevo_estado_id = request.POST.get('estado')
-        nuevo_estado = get_object_or_404(Estadobox, pk=nuevo_estado_id)
-        box.estadobox_idestadobox = nuevo_estado
-        box.save()
-
-        channel_layer = get_channel_layer()
 
 
-        status_classes = {
-            'Disponible': 'bg-success',
-            'Ocupado': 'bg-danger',
-            'No disponible': 'bg-warning text-dark'
-        }
+def box_detalle(request, box_id):
+    box = get_object_or_404(Box, idbox=box_id)
+    ocupaciones = Boxprofesional.objects.filter(box_idbox=box).order_by('fechaasignacion')
 
-        new_status_class = status_classes.get(nuevo_estado.nombre, 'bg-secondary')
+    # Calcular horas totales y agrupar por doctor
+    horas_por_doctor = defaultdict(int)
+    for ocupacion in ocupaciones:
+        inicio = ocupacion.horarioinicio
+        fin = ocupacion.horariofin
+        horas_tomadas = (fin.hour * 60 + fin.minute) - (inicio.hour * 60 + inicio.minute)
+        horas_por_doctor[ocupacion.profesional_idprofesional.nombre] += horas_tomadas  # Cambiado a 'profesional_idprofesional'
 
-        async_to_sync(channel_layer.group_send)(
-            "boxes_updates",
-            {
-                'type': 'box_update',
-                'box_id': box.idbox,
-                'box_number': box.numerobox,
-                'new_status_class': new_status_class
-            }
-        )
+    # Convertir minutos a horas y minutos
+    horas_por_doctor = {doctor: f"{horas // 60}h {horas % 60}m" for doctor, horas in horas_por_doctor.items()}
 
-
-        return redirect('box_list')
-
-    return render(request, 'cambiar_estado.html', {
+    return render(request, 'box_detalle.html', {
         'box': box,
-        'estados': estados
+        'ocupaciones': ocupaciones,
+        'horas_por_doctor': horas_por_doctor,
     })
 

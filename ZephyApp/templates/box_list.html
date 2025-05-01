@@ -55,9 +55,9 @@
   </form>
   <div class="d-flex flex-column align-items-center mt-3 mt-lg-0">
     <div class="mb-2 d-flex gap-2 flex-wrap justify-content-center">
-      <span class="badge bg-success">Disponible</span>
-      <span class="badge bg-danger">Ocupado</span>
-      <span class="badge bg-warning text-dark">No Disponible</span>
+      <span class="badge" style="background-color: #edf2fb; color: black;">Disponible</span>
+      <span class="badge" style="background-color: #abc4ff; color: black;">Ocupado</span>
+      <span class="badge" style="background-color: #d4afb9; color: black;">No Disponible</span>
     </div>
   
     <div>
@@ -136,28 +136,42 @@
       <div class="pasillo-separator">{{ pasillo }}</div>
       <div class="inner-box-grid">
         {% for box in boxes_grupo %}
-          <a href="{% if box.box.idbox %}{% url 'cambiar_estado_box' box.box.idbox %}{% else %}#{% endif %}" 
+            <a 
+            href="{% url 'box_detalle' box.box.idbox %}" 
             id="box-{{ box.box.idbox }}" 
             class="box-card
               {% if box.box.estadobox_idestadobox.nombre == 'Disponible' %}
-                  bg-success
+                bg-disponible 
               {% elif box.box.estadobox_idestadobox.nombre == 'Ocupado' %}
-                  bg-danger
+                bg-ocupado
               {% elif box.box.estadobox_idestadobox.nombre == 'No disponible' %}
-                  bg-warning text-dark
+                bg-no-disponible 
               {% else %}
-                  bg-secondary
+                bg-secondary
               {% endif %}">
             <div><strong>Box {{ box.box.numerobox }}</strong></div>
             <div><strong>AM:</strong> {{ box.porcentaje_am }}%</div>
             <div><strong>PM:</strong> {{ box.porcentaje_pm }}%</div>
-          </a>
+            </a>
         {% endfor %}
       </div>
     </div>
   {% endfor %}
 </div>
-
+<style>
+  .bg-disponible {
+    background-color: #edf2fb;
+    color: black !important;
+  }
+  .bg-ocupado {
+    background-color: #abc4ff ;
+    color: white !important;
+  }
+  .bg-no-disponible {
+    background-color: #d4afb9;
+    color: white !important;
+  }
+</style>
 <script>
 const socket = new WebSocket('ws://' + window.location.host + '/ws/boxes/');
 
@@ -165,9 +179,9 @@ socket.onmessage = function(event) {
     const data = JSON.parse(event.data);
     const boxElement = document.getElementById('box-' + data.box_id);
     if (boxElement) {
-        boxElement.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'text-dark', 'bg-secondary');
+        boxElement.classList.remove('bg-disponible', 'bg-ocupado', 'bg-no-disponible', 'text-dark', 'bg-secondary');
         boxElement.classList.add(data.new_status_class);
-        showToast(`Hubo una actualización en el box ${data.box_number}`);
+        showToast(`Hubo una actualización en el box ${data.box_id}`);
         if (data.new_status_class === 'bg-warning') {
             boxElement.classList.add('text-dark');
         }

@@ -9,8 +9,8 @@ def notificar_cambio_box(sender, instance, **kwargs):
     channel_layer = get_channel_layer()
     estado = instance.estadobox_idestadobox.nombre
 
-    status_class = 'bg-success' if estado == 'Disponible' else (
-        'bg-danger' if estado == 'Ocupado' else 'bg-warning text-dark'
+    status_class = '#edf2fb' if estado == 'Disponible' else (
+        '#abc4ff' if estado == 'Ocupado' else '#d4afb9'
     )
 
     async_to_sync(channel_layer.group_send)(
