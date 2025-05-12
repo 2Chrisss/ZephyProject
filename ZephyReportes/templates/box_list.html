@@ -16,6 +16,10 @@
     background-color: #a3a9f7;
     color: black !important;
   }
+  .bg-alerta {
+    background-color: #abbcf5;
+    color: black !important;
+  }
 </style>
 <div class="mb-4 d-flex justify-content-between align-items-center flex-wrap">
 
@@ -182,7 +186,7 @@ socket.onmessage = function(event) {
     if (boxElement) {
         boxElement.classList.remove('bg-disponible', 'bg-ocupado', 'bg-no-disponible', 'text-dark', 'bg-secondary');
         boxElement.classList.add(data.new_status_class);
-        showToast(`Hubo una actualización en el box ${data.box_id}`);
+        showToast(`Hubo una actualización en el box ${data.box_number}`);
         if (data.new_status_class === 'bg-warning') {
             boxElement.classList.add('text-dark');
         }

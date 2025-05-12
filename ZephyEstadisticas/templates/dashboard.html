@@ -16,68 +16,89 @@
     color: black !important;
   }
   .chart-container {
-  position: relative;
-  margin: auto;
-  height: 300px;
-  width: 100%;
-  margin-bottom: 20px;
-}
+    position: relative;
+    margin: auto;
+    width: 100%;
+    height: auto;
+    margin-bottom: 20px;
+  }
+  .hover-effect {
+    transition: all 0.3s ease;
+    color: black;
+  }
+  .hover-effect:hover {
+    transform: scale(1.02);
+  }
+  canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+  /* Pie chart más chico */
+  #boxChart {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* En mobile: cambiar orden */
+  @media (max-width: 767.98px) {
+    .order-mobile-1 {
+      order: 1;
+    }
+    .order-mobile-2 {
+      order: 2;
+    }
+  }
 </style>
 
 <h1 class="display-4 text-center fw-semibold mb-4 mt-3 hover-effect">
   Dashboard Principal
 </h1>
 
-<style>
-.hover-effect {
-  transition: all 0.3s ease;
-  color: black;
-}
-.hover-effect:hover {
-  transform: scale(1.02);
-}
-</style>
 <div class="container mt-4">
   <div class="row gx-4 gx-md-5">
-    <div class="col-12 col-md-6 mb-4">
+    <!-- Gráficos -->
+    <div class="col-12 col-lg-6 order-mobile-2 mb-4">
       <h2 class="text-center">Ocupación por Intervalos</h2>
-      <div class="d-flex justify-content-start ps-3">
-      <canvas id="graficoOcupacion" width="300" height="200"></canvas>
+      <div class="chart-container">
+        <canvas id="graficoOcupacion"></canvas>
       </div>
       <h2 class="text-center">Top 5 Box con menor ocupación</h2>
-      <div class="d-flex justify-content-start ps-3">
-      <canvas id="topBoxesChart" width="300" height="200"></canvas>
+      <div class="chart-container">
+        <canvas id="topBoxesChart"></canvas>
       </div>
     </div>
 
-    <div class="col-12 col-md-6">
+    <!-- Cards -->
+    <div class="col-12 col-lg-6 order-mobile-1">
       <div class="row">
         <div class="col-12 col-sm-6 col-md-4 mb-3">
           <a href="{% url 'box_list' %}?estadobox_idestadobox=1" class="text-decoration-none">
             <div class="card bg-disponible h-100">
-              <div class="card-header text-center fw-bold" >Boxes Disponibles</div>
+              <div class="card-header text-center fw-bold">Boxes Disponibles</div>
               <div class="card-body text-center">
                 <h5 class="card-title" id="box-disponibles" style="font-size: 30px;">{{ box_disponibles }}</h5>
               </div>
             </div>
           </a>
         </div>
+
         <div class="col-12 col-sm-6 col-md-4 mb-3">
           <a href="{% url 'box_list' %}?estadobox_idestadobox=2" class="text-decoration-none">
             <div class="card bg-ocupado h-100">
               <div class="card-header text-center fw-bold">Boxes Ocupados</div>
               <div class="card-body text-center">
-                <h5 class="card-title " id="box-ocupados" style="font-size: 30px; ">{{ box_ocupados }}</h5>
-            </div>
+                <h5 class="card-title" id="box-ocupados" style="font-size: 30px;">{{ box_ocupados }}</h5>
+              </div>
             </div>
           </a>
         </div>
+
         <div class="col-12 col-sm-6 col-md-4 mb-3">
           <a href="{% url 'box_list' %}?estadobox_idestadobox=3" class="text-decoration-none">
             <div class="card bg-no-disponible h-100">
               <div class="card-header text-center fw-bold">Boxes No Disponibles</div>
               <div class="card-body text-center">
-                <h5 class="card-title " id="box-no-disponibles" style="font-size: 30px;">{{ box_no_disponibles }}</h5>
+                <h5 class="card-title" id="box-no-disponibles" style="font-size: 30px;">{{ box_no_disponibles }}</h5>
               </div>
             </div>
           </a>
@@ -90,13 +111,14 @@
 
       <div class="mt-4">
         <h2 class="text-center mb-4">Cantidad de boxes por estado</h2>
-        <div class="px-3">
+        <div class="chart-container">
           <canvas id="boxChart"></canvas>
         </div>
       </div>
     </div>
   </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   // Variables globales para los gráficos
