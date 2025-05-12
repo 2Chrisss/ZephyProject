@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from .models import Box
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from ZephyEstadisticas.signals import send_dashboard_update
 
 @receiver(post_save, sender=Box)
 def notificar_cambio_box(sender, instance, **kwargs):
@@ -22,3 +23,7 @@ def notificar_cambio_box(sender, instance, **kwargs):
             'new_status_class': status_class,
         }
     )
+
+@receiver(post_save, sender=Box)
+def actualizar_dashboard_post_save(sender, instance, created, **kwargs):
+    send_dashboard_update()

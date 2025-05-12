@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'ZephyApp.apps.ZephyAppConfig'
+    'ZephyReportes.apps.ZephyReportesAppConfig',
+    'ZephyEstadisticas.apps.ZephyestadisticasConfig',
 
 ]
 CHANNEL_LAYERS = {
@@ -129,7 +130,10 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'ZephyApp' / 'static']
+STATICFILES_DIRS = [
+    BASE_DIR / 'ZephyReportes' / 'static',
+    BASE_DIR / 'ZephyEstadisticas' / 'static',
+]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

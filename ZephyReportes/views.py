@@ -15,6 +15,8 @@ def dashboard(request):
         'box_ocupados': box_ocupados,
         'box_no_disponibles': box_no_disponibles,
     })
+from datetime import datetime, time
+
 def calcular_porcentaje_ocupacion(box, fecha=None):
     if fecha:
         fecha_filtro = timezone.datetime.strptime(fecha, "%Y-%m-%d").date()
@@ -30,16 +32,24 @@ def calcular_porcentaje_ocupacion(box, fecha=None):
     total_am = 0
     total_pm = 0
 
-    for ocupacion in ocupaciones:
-        if ocupacion.horarioinicio < time(12, 0):
-            fin_am = min(ocupacion.horariofin, time(12, 0))
-            total_am += (fin_am.hour * 60 + fin_am.minute) - (ocupacion.horarioinicio.hour * 60 + ocupacion.horarioinicio.minute)
-        if ocupacion.horariofin > time(12, 0):
-            inicio_pm = max(ocupacion.horarioinicio, time(12, 0))
-            total_pm += (ocupacion.horariofin.hour * 60 + ocupacion.horariofin.minute) - (inicio_pm.hour * 60 + inicio_pm.minute)
+    inicio_am = time(8, 0)
+    fin_am = time(12, 0)
+    inicio_pm = time(12, 0)
+    fin_pm = time(17, 0)
 
-    porcentaje_am = (total_am / (12 * 60)) * 100
-    porcentaje_pm = (total_pm / (5 * 60)) * 100
+    for ocupacion in ocupaciones:
+        if ocupacion.horarioinicio < fin_am and ocupacion.horariofin > inicio_am:
+            hora_inicio = max(ocupacion.horarioinicio, inicio_am)
+            hora_fin = min(ocupacion.horariofin, fin_am)
+            total_am += (hora_fin.hour * 60 + hora_fin.minute) - (hora_inicio.hour * 60 + hora_inicio.minute)
+
+        if ocupacion.horarioinicio < fin_pm and ocupacion.horariofin > inicio_pm:
+            hora_inicio = max(ocupacion.horarioinicio, inicio_pm)
+            hora_fin = min(ocupacion.horariofin, fin_pm)
+            total_pm += (hora_fin.hour * 60 + hora_fin.minute) - (hora_inicio.hour * 60 + hora_inicio.minute)
+
+    porcentaje_am = (total_am / ((fin_am.hour - inicio_am.hour) * 60)) * 100
+    porcentaje_pm = (total_pm / ((fin_pm.hour - inicio_pm.hour) * 60)) * 100
 
     return round(porcentaje_am, 2), round(porcentaje_pm, 2)
 

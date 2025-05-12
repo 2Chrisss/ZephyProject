@@ -5,7 +5,7 @@ from .models import Boxprofesional, Estadobox
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from datetime import datetime
-import pytz  # Para manejar la zona horaria explícitamente
+import pytz  
 
 def check_and_update_boxes():
     while True:
@@ -46,7 +46,6 @@ def check_and_update_boxes():
                             'box_id': box.idbox,
                             'box_number': box.numerobox,
                             'new_status_class': 'bg-ocupado'  
-
                         }
                     )
 
@@ -65,7 +64,7 @@ def check_and_update_boxes():
             for asignacion in boxes_disponibles:
                 box = asignacion.box_idbox
 
-                # Si este box no fue marcado como ocupado este ciclo
+         
                 if box.idbox not in boxes_ocupados_ids and box.estadobox_idestadobox != disponible_estado:
                     box.estadobox_idestadobox = disponible_estado
                     box.save()
@@ -84,8 +83,7 @@ def check_and_update_boxes():
         except Exception as e:
             print(f"[ERROR] {str(e)}")
 
-        time.sleep(5)
-
+        time.sleep(1)
 
 def start_task():
     thread = threading.Thread(target=check_and_update_boxes, daemon=True)

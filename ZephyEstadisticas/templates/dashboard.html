@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Principal{% endblock %}
+{% block content %}
+<style>
+  .bg-disponible {
+    background-color: #a3c4f7;
+    color: black !important;
+  }
+  .bg-ocupado {
+    background-color: #5371d6;
+    color: white !important;
+  }
+  .bg-no-disponible {
+    background-color: #a3a9f7;
+    color: black !important;
+  }
+  .chart-container {
+  position: relative;
+  margin: auto;
+  height: 300px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+</style>
+
+<h1 class="display-4 text-center fw-semibold mb-4 mt-3 hover-effect">
+  Dashboard Principal
+</h1>
+
+<style>
+.hover-effect {
+  transition: all 0.3s ease;
+  color: black;
+}
+.hover-effect:hover {
+  transform: scale(1.02);
+}
+</style>
+<div class="container mt-4">
+  <div class="row gx-4 gx-md-5">
+    <div class="col-12 col-md-6 mb-4">
+      <h2 class="text-center">Ocupación por Intervalos</h2>
+      <div class="d-flex justify-content-start ps-3">
+      <canvas id="graficoOcupacion" width="300" height="200"></canvas>
+      </div>
+      <h2 class="text-center">Top 5 Box con menor ocupación</h2>
+      <div class="d-flex justify-content-start ps-3">
+      <canvas id="topBoxesChart" width="300" height="200"></canvas>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-6">
+      <div class="row">
+        <div class="col-12 col-sm-6 col-md-4 mb-3">
+          <a href="{% url 'box_list' %}?estadobox_idestadobox=1" class="text-decoration-none">
+            <div class="card bg-disponible h-100">
+              <div class="card-header text-center fw-bold" >Boxes Disponibles</div>
+              <div class="card-body text-center">
+                <h5 class="card-title" id="box-disponibles" style="font-size: 30px;">{{ box_disponibles }}</h5>
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4 mb-3">
+          <a href="{% url 'box_list' %}?estadobox_idestadobox=2" class="text-decoration-none">
+            <div class="card bg-ocupado h-100">
+              <div class="card-header text-center fw-bold">Boxes Ocupados</div>
+              <div class="card-body text-center">
+                <h5 class="card-title " id="box-ocupados" style="font-size: 30px; ">{{ box_ocupados }}</h5>
+            </div>
+            </div>
+          </a>
+        </div>
+        <div class="col-12 col-sm-6 col-md-4 mb-3">
+          <a href="{% url 'box_list' %}?estadobox_idestadobox=3" class="text-decoration-none">
+            <div class="card bg-no-disponible h-100">
+              <div class="card-header text-center fw-bold">Boxes No Disponibles</div>
+              <div class="card-body text-center">
+                <h5 class="card-title " id="box-no-disponibles" style="font-size: 30px;">{{ box_no_disponibles }}</h5>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div class="text-center mt-3">
+        <a href="{% url 'box_list' %}" class="btn btn-primary">Detalle</a>
+      </div>
+
+      <div class="mt-4">
+        <h2 class="text-center mb-4">Cantidad de boxes por estado</h2>
+        <div class="px-3">
+          <canvas id="boxChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Variables globales para los gráficos
+  let boxChart;
+  let ocupacionChart;
+  let topBoxesChart;
+  
+  // ... (las funciones initPieChart y initLineChart anteriores se mantienen igual)
+
+  // Nueva función para inicializar el gráfico de top boxes
+  function initTopBoxesChart(labels, data) {
+    const ctx = document.getElementById('topBoxesChart').getContext('2d');
+    topBoxesChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Número de ocupaciones',
+          data: data,
+          backgroundColor: '#5371d6',
+          borderColor: '#ffffff',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
+          },
+          title: {
+            display: true,
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Número de ocupaciones'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Boxes'
+            }
+          }
+        }
+      }
+    });
+  }
+  // Inicializar gráfico de pie
+  function initPieChart(disponibles, ocupados, noDisponibles) {
+    const ctx = document.getElementById('boxChart').getContext('2d');
+    boxChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['Disponibles', 'Ocupados', 'No Disponibles'],
+        datasets: [{
+          data: [disponibles, ocupados, noDisponibles],
+          backgroundColor: ['#a3c4f7', '#5371d6', '#a3a9f7'],
+          borderColor: ['#ffffff', '#ffffff', '#ffffff'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+            align: 'middle'
+          },
+          tooltip: {
+            callbacks: {
+              label: function(tooltipItem) {
+                return `${tooltipItem.label}: ${tooltipItem.raw}`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Inicializar gráfico de líneas
+  function initLineChart(ocupacionData) {
+    const intervalos = ocupacionData.map(item => item.intervalo);
+    const ocupados = ocupacionData.map(item => item.ocupados);
+
+    const ctx = document.getElementById('graficoOcupacion').getContext('2d');
+    ocupacionChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: intervalos,
+        datasets: [
+          { 
+            label: 'Cantidad de Boxes',
+            data: ocupados,
+            fill:true,
+            borderColor: '#5371d6',
+            fill: false
+          },
+
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Intervalo de Tiempo'
+            },
+            ticks: {
+              maxRotation: 45,
+              minRotation: 45
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Cantidad de Boxes'
+            },
+            suggestedMin: 0
+          }
+        }
+      }
+    });
+  }
+
+  // Actualizar todos los gráficos
+  function updateAllCharts(data) {
+    // Actualizar cards
+    document.querySelector(".bg-disponible h5").textContent = data.box_disponibles;
+    document.querySelector(".bg-ocupado h5").textContent = data.box_ocupados;
+    document.querySelector(".bg-no-disponible h5").textContent = data.box_no_disponibles;
+    
+    // Actualizar gráfico de pie
+    if (boxChart) {
+      boxChart.data.datasets[0].data = [data.box_disponibles, data.box_ocupados, data.box_no_disponibles];
+      boxChart.update();
+    } else {
+      initPieChart(data.box_disponibles, data.box_ocupados, data.box_no_disponibles);
+    }
+    
+    // Actualizar gráfico de líneas
+    if (ocupacionChart) {
+      const intervalos = data.ocupacion_por_intervalo.map(item => item.intervalo);
+      const ocupados = data.ocupacion_por_intervalo.map(item => item.ocupados);
+      
+      ocupacionChart.data.labels = intervalos;
+      ocupacionChart.data.datasets[0].data = ocupados;
+      ocupacionChart.update();
+    } else {
+      initLineChart(data.ocupacion_por_intervalo);
+    }
+    if (topBoxesChart) {
+      topBoxesChart.data.labels = data.top_poco_ocupados.labels;
+      topBoxesChart.data.datasets[0].data = data.top_poco_ocupados.data;
+      topBoxesChart.update();
+    } else {
+      initTopBoxesChart(data.top_poco_ocupados.labels, data.top_poco_ocupados.data);
+    }
+  }
+  
+  
+  // Conexión WebSocket
+  const socket = new WebSocket('ws://' + window.location.host + '/ws/estadisticas/');
+
+  socket.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    updateAllCharts(data);
+  };
+
+  socket.onopen = () => console.log("WebSocket del dashboard conectado");
+  socket.onclose = () => console.log("WebSocket del dashboard desconectado");
+
+  // Inicialización cuando se carga la página
+  document.addEventListener('DOMContentLoaded', function() {
+  // Usar los datos iniciales incrustados en la plantilla
+  const initialData = {
+    box_disponibles: {{ box_disponibles }},
+    box_ocupados: {{ box_ocupados }},
+    box_no_disponibles: {{ box_no_disponibles }},
+    ocupacion_por_intervalo: [], // Inicialmente vacío, se llenará por WebSocket
+    top_poco_ocupados: {
+      labels: [],
+      data: []
+    }
+  };
+  
+  // Inicializar gráficos con datos vacíos/básicos
+  updateAllCharts(initialData);
+  
+  // Los datos reales llegarán por WebSocket casi inmediatamente
+  // y actualizarán los gráficos
+});
+</script>
+{% endblock %}

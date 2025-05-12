@@ -1,3 +1,4 @@
+# ZephyReportes/consumers.py
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 
@@ -18,7 +19,6 @@ class BoxConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-
         await self.channel_layer.group_send(
             self.group_name,
             {
