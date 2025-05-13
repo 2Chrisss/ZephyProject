@@ -4,7 +4,7 @@ from .models import *
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.utils import timezone
-from datetime import time,datetime
+from datetime import time,datetime, date
 
 def dashboard(request):
     box_disponibles = Box.objects.filter(estadobox_idestadobox='1').count()
@@ -108,7 +108,12 @@ def box_list(request):
 
 def box_detalle(request, box_id):
     box = get_object_or_404(Box, idbox=box_id)
-    ocupaciones = Boxprofesional.objects.filter(box_idbox=box).order_by('fechaasignacion')
+    
+    # Filtrar ocupaciones del día actual
+    ocupaciones = Boxprofesional.objects.filter(
+        box_idbox=box,
+        fechaasignacion=date.today()  # Filtrar por la fecha actual
+    ).order_by('fechaasignacion')
 
     # Calcular horas totales y agrupar por doctor
     horas_por_doctor = defaultdict(int)

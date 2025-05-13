@@ -1,20 +1,21 @@
 {% extends "base.html" %}
-
-{% block title %}Detalle del Box{% endblock %}
-
 {% block content %}
-<h1>Detalle del Box {{ box.numerobox }}</h1>
-<p><strong>Estado:</strong> {{ box.estadobox_idestadobox.nombre }}</p>
-<p><strong>Tipo:</strong> {{ box.tipobox_idtipobox.nombre }}</p>
+<div class = "text-center">
+    <h1><strong>Detalle Box {{ box.numerobox }}</strong></h1>
+</div>
 
-<h2>Horas Totales por Doctor</h2>
+<p><strong>Estado:</strong> {{ box.estadobox_idestadobox.nombre }}</p>
+
+<h2>Horas Totales por Doctor:</h2>
 <ul>
     {% for doctor, horas in horas_por_doctor.items %}
     <li><strong>{{ doctor }}:</strong> {{ horas }}</li>
     {% endfor %}
 </ul>
 
-<h2>Ocupaciones</h2>
+<div class="text-center ">
+    <h2><strong>Ocupaciones</strong></h2>
+</div>
 <table class="table">
     <thead>
         <tr>
