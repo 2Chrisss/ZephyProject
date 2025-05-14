@@ -15,7 +15,7 @@ def dashboard(request):
         'box_ocupados': box_ocupados,
         'box_no_disponibles': box_no_disponibles,
     })
-from datetime import datetime, time
+
 
 def calcular_porcentaje_ocupacion(box, fecha=None):
     if fecha:
