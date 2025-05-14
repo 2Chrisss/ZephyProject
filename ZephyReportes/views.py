@@ -108,27 +108,40 @@ def box_list(request):
 
 def box_detalle(request, box_id):
     box = get_object_or_404(Box, idbox=box_id)
-    
-    # Filtrar ocupaciones del día actual
-    ocupaciones = Boxprofesional.objects.filter(
+    ocupaciones_qs = Boxprofesional.objects.filter(
         box_idbox=box,
-        fechaasignacion=date.today()  # Filtrar por la fecha actual
+        fechaasignacion=date.today()
     ).order_by('fechaasignacion')
 
-    # Calcular horas totales y agrupar por doctor
+    ocupaciones = []
     horas_por_doctor = defaultdict(int)
-    for ocupacion in ocupaciones:
-        inicio = ocupacion.horarioinicio
-        fin = ocupacion.horariofin
-        horas_tomadas = (fin.hour * 60 + fin.minute) - (inicio.hour * 60 + inicio.minute)
-        horas_por_doctor[ocupacion.profesional_idprofesional.nombre] += horas_tomadas  # Cambiado a 'profesional_idprofesional'
+    for ocupacion in ocupaciones_qs:
+        inicio_min = ocupacion.horarioinicio.hour * 60 + ocupacion.horarioinicio.minute
+        fin_min = ocupacion.horariofin.hour * 60 + ocupacion.horariofin.minute
+        duracion = fin_min - inicio_min
+        horas_por_doctor[ocupacion.profesional_idprofesional.nombre] += duracion
+        ocupaciones.append({
+            'profesional': ocupacion.profesional_idprofesional,
+            'inicio_min': inicio_min,
+            'fin_min': fin_min,
+        })
 
-    # Convertir minutos a horas y minutos
-    horas_por_doctor = {doctor: f"{horas // 60}h {horas % 60}m" for doctor, horas in horas_por_doctor.items()}
+    # Formatea las horas totales como "Xh Ym"
+    horas_por_doctor_fmt = {doctor: f"{minutos // 60}h {minutos % 60}m" for doctor, minutos in horas_por_doctor.items()}
+
+    # Generar intervalos de 30 minutos entre 08:00 y 17:30
+    intervalos = []
+    start = 8 * 60
+    end = 17 * 60 + 30
+    for minutos in range(start, end + 1, 30):
+        h = minutos // 60
+        m = minutos % 60
+        intervalos.append({'label': f"{h:02d}:{m:02d}", 'total_min': minutos})
 
     return render(request, 'box_detalle.html', {
         'box': box,
         'ocupaciones': ocupaciones,
-        'horas_por_doctor': horas_por_doctor,
+        'horas_por_doctor': horas_por_doctor_fmt,
+        'intervalos': intervalos,
     })
 
