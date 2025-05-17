@@ -1,11 +1,7 @@
-# This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#   * Rearrange models' order
-#   * Make sure each model has one field with primary_key=True
-#   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
-#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
-# Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
+from django.utils import timezone
+from datetime import time,datetime, date
+from .estado import EstadoDisponible, EstadoOcupado, EstadoNoDisponible
 
 
 class AuthGroup(models.Model):
@@ -128,6 +124,8 @@ class Especialidad(models.Model):
     idespecialidad = models.IntegerField(db_column='idEspecialidad', primary_key=True)  # Field name made lowercase.
     nombre = models.CharField(max_length=120, blank=True, null=True)
     descripcion = models.CharField(max_length=120, blank=True, null=True)
+    def getAllEspecialidades():
+        return list(Especialidad.objects.values_list('idEspecialidad', flat=True))
 
     class Meta:
         managed = False
@@ -137,8 +135,15 @@ class Especialidad(models.Model):
 class Estadobox(models.Model):
     idestadobox = models.IntegerField(db_column='idestadoBox', primary_key=True)  # Field name made lowercase.
     nombre = models.CharField(max_length=90, blank=True, null=True)
-    descripcion = models.CharField(max_length=200, blank=True, null=True)
+    estado = models.CharField(db_column='nombre',max_length=200, blank=True, null=True)
+    def getEstadoBox(idestado: int):
+        return EstadoBox.objects.filter(id=idestadobox).values_list('nombre', flat=True).first()
 
+    def getAllEstados():
+        return list(EstadoBox.objects.values_list('nombre', flat=True))
+
+    def getAll_idEstado():
+        return list(EstadoBox.objects.values_list('idEstadoBox', flat=True))
     class Meta:
         managed = False
         db_table = 'estadobox'
@@ -147,7 +152,11 @@ class Estadobox(models.Model):
 class Pasillobox(models.Model):
     idpasillobox = models.AutoField(db_column='idPasilloBox', primary_key=True)  # Field name made lowercase.
     nombre = models.CharField(max_length=45, blank=True, null=True)
+    def getPasilloBox():
+        return list(PasilloBox.objects.values_list('nombrebox', flat=True))
 
+    def getAllPasilloBox():
+        return list(PasilloBox.objects.values_list('nombrebox', flat=True))
     class Meta:
         managed = False
         db_table = 'pasillobox'
@@ -161,30 +170,78 @@ class Profesional(models.Model):
     apellido = models.CharField(max_length=90, blank=True, null=True)
     email = models.CharField(max_length=320, blank=True, null=True)
     telefono = models.CharField(max_length=20, blank=True, null=True)
+    
+    def getAllProfesionales():
+        return list(Profesional.objects.values_list('rutProfesional', flat=True))
+
+    def getProfessional(rut: str):
+        return Profesional.objects.filter(rutprofesional=rut).first()
 
     class Meta:
         managed = False
         db_table = 'profesional'
+
 class Box(models.Model):
     idbox = models.AutoField(db_column='idBox', primary_key=True)  # Field name made lowercase.
     estadobox_idestadobox = models.ForeignKey('Estadobox', models.DO_NOTHING, db_column='estadoBox_idestadoBox')  # Field name made lowercase.
     numerobox = models.CharField(db_column='numeroBox', max_length=10, blank=True, null=True)  # Field name made lowercase.
     ubicacionbox = models.CharField(db_column='ubicacionBox', max_length=200, blank=True, null=True)  # Field name made lowercase.
     pasillobox_idpasillobox = models.ForeignKey('Pasillobox', models.DO_NOTHING, db_column='pasilloBox_idPasilloBox', blank=True, null=True)  # Field name made lowercase.
-
+    
+    def get_estado_instance(self):
+        if self.estadobox_idestadobox_id == 1:
+            return EstadoDisponible(self)
+        elif self.estadobox_idestadobox_id == 3:
+            return EstadoNoDisponible(self)
+        elif self.estadobox_idestadobox_id == 2:
+            return EstadoOcupado(self)
+        else:
+            return None
     class Meta:
         managed = False
         db_table = 'box'
 
 
 class Boxprofesional(models.Model):
-    idboxprofesionalcol = models.AutoField(db_column='idBoxProfesionalcol', primary_key=True)  # Field name made lowercase.
-    box_idbox = models.ForeignKey(Box, models.DO_NOTHING, db_column='Box_idBox')  # Field name made lowercase.
-    profesional_idprofesional = models.ForeignKey('Profesional', models.DO_NOTHING, db_column='Profesional_idProfesional')  # Field name made lowercase.
+    idboxprofesional = models.AutoField(db_column='idBoxProfesionalcol', primary_key=True)  # Field name made lowercase.
+    idbox = models.ForeignKey(Box, models.DO_NOTHING, db_column='Box_idBox')  # Field name made lowercase.
+    idprofesional = models.ForeignKey('Profesional', models.DO_NOTHING, db_column='Profesional_idProfesional')  # Field name made lowercase.
     fechaasignacion = models.DateField(db_column='fechaAsignacion', blank=True, null=True)  # Field name made lowercase.
     fechatermino = models.DateField(db_column='fechaTermino', blank=True, null=True)  # Field name made lowercase.
     horarioinicio = models.TimeField(db_column='horarioInicio', blank=True, null=True)  # Field name made lowercase.
     horariofin = models.TimeField(db_column='horarioFin', blank=True, null=True)  # Field name made lowercase.
+
+    
+    @staticmethod
+    def calcular_porcentaje_ocupacion_con_ocupaciones(ocupaciones):
+        horas_am_ocupadas = 0
+        minutos_am_ocupados = 0
+        horas_pm_ocupadas = 0
+        minutos_pm_ocupados = 0
+
+        inicio_am = 8 * 60        
+        fin_am = 12 * 60         
+        inicio_pm = 12 * 60       
+        fin_pm = 17 * 60 + 30     
+
+        for ocupacion in ocupaciones:
+            inicio_ocup = ocupacion.horarioinicio.hour * 60 + ocupacion.horarioinicio.minute
+            fin_ocup = ocupacion.horariofin.hour * 60 + ocupacion.horariofin.minute
+
+            inicio_am_ocup = max(inicio_ocup, inicio_am)
+            fin_am_ocup = min(fin_ocup, fin_am)
+            if fin_am_ocup > inicio_am_ocup:
+                minutos_am_ocupados += fin_am_ocup - inicio_am_ocup
+
+            inicio_pm_ocup = max(inicio_ocup, inicio_pm)
+            fin_pm_ocup = min(fin_ocup, fin_pm)
+            if fin_pm_ocup > inicio_pm_ocup:
+                minutos_pm_ocupados += fin_pm_ocup - inicio_pm_ocup
+
+        porcentaje_am = (minutos_am_ocupados / ((fin_am - inicio_am))) * 100
+        porcentaje_pm = (minutos_pm_ocupados / ((fin_pm - inicio_pm))) * 100
+
+        return round(porcentaje_am, 2), round(porcentaje_pm, 2)
 
     class Meta:
         managed = False

@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1 class="display-4 text-center fw-semibold mb-4 mt-3 hover-effect">
+    Agendar Box
+  </h1>
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Filtrar disponibilidad</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3" id="filtroForm">
+                <div class="col-md-4">
+                    <label for="id_box" class="form-label">Box:</label>
+                    <select name="box" id="id_box" class="form-select" required>
+                        <option value="">-- Selecciona un box --</option>
+                        {% for box in boxes %}
+                            <option value="{{ box.pk }}" {% if box.pk|stringformat:"s" == box_seleccionado|stringformat:"s" %}selected{% endif %}>
+                                {{ box.numerobox }} ({{ box.estadobox_idestadobox.nombre }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="id_fecha_asignacion" class="form-label">Fecha asignación:</label>
+                    <input type="date" name="fecha_asignacion" id="id_fecha_asignacion" 
+                           value="{{ fecha_seleccionada|default:'' }}" class="form-control" required
+                           min="{{ today|date:'Y-m-d' }}">
+                </div>
+                
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Buscar disponibilidad
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if box %}
+        <div class="alert 
+            {% if box.estadobox_idestadobox_id == 1 %}alert-success
+            {% elif box.estadobox_idestadobox_id == 2 %}alert-warning
+            {% else %}alert-danger{% endif %}">
+            <strong>Estado actual:</strong> {{ box.estadobox_idestadobox.nombre }}
+            {% if box.estadobox_idestadobox_id == 3 %}
+                <span class="badge bg-danger ms-2">No disponible para agendamiento</span>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {% if box and fecha_seleccionada %}
+        <div class="mb-4">
+            {% if horarios_disponibles %}
+                <h5><i class="bi bi-check-circle"></i> Horarios disponibles</h5>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% for hora, texto in horarios_disponibles %}
+                        <span class="badge bg-success">{{ texto }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> No hay horarios disponibles para esta fecha
+                </div>
+            {% endif %}
+            
+            {% if rangos_ocupados %}
+                <h5><i class="bi bi-clock-history"></i> Horarios ocupados</h5>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for inicio, fin in rangos_ocupados %}
+                        <span class="badge bg-secondary">{{ inicio }} - {{ fin }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {% if box and fecha_seleccionada and horarios_disponibles and box.estadobox_idestadobox_id != 3 %}
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-calendar-plus"></i> Nuevo Agendamiento</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" novalidate id="agendarForm">
+                {% csrf_token %}
+                <input type="hidden" name="box" value="{{ box.pk }}">
+                <input type="hidden" name="fecha_asignacion" value="{{ fecha_seleccionada }}">
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            <p class="mb-0"><i class="bi bi-exclamation-circle"></i> {{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="id_profesional" class="form-label">Profesional:</label>
+                        <select name="profesional" id="id_profesional" class="form-select" required>
+                            <option value="">-- Selecciona un profesional --</option>
+                            {% for prof in form.fields.profesional.queryset %}
+                                <option value="{{ prof.pk }}" {% if form.profesional.value|stringformat:"s" == prof.pk|stringformat:"s" %}selected{% endif %}>
+                                    {{ prof.nombre }} {{ prof.apellido }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.profesional.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.profesional.errors|join:", " }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="id_fecha_termino" class="form-label">Fecha término:</label>
+                        <input type="date" name="fecha_termino" id="id_fecha_termino" 
+                               value="{{ form.fecha_termino.value|default:fecha_seleccionada }}" class="form-control" required
+                               min="{{ fecha_seleccionada }}">
+                        {% if form.fecha_termino.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.fecha_termino.errors|join:", " }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="id_horario_inicio" class="form-label">Horario inicio:</label>
+                        <select name="horario_inicio" id="id_horario_inicio" class="form-select" required>
+                            <option value="">-- Selecciona horario --</option>
+                            {% for valor, texto in form.fields.horario_inicio.choices %}
+                                <option value="{{ valor }}" {% if form.horario_inicio.value == valor %}selected{% endif %}>
+                                    {{ texto }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.horario_inicio.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.horario_inicio.errors|join:", " }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="id_horario_fin" class="form-label">Horario fin:</label>
+                        <select name="horario_fin" id="id_horario_fin" class="form-select" required>
+                            <option value="">-- Selecciona horario --</option>
+                            {% for valor, texto in form.fields.horario_fin.choices %}
+                                <option value="{{ valor }}" {% if form.horario_fin.value == valor %}selected{% endif %}>
+                                    {{ texto }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.horario_fin.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ form.horario_fin.errors|join:", " }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-12 mt-3">
+                        <button type="submit" class="btn btn-success w-100 py-2">
+                            <i class="bi bi-calendar-check"></i> Confirmar Agendamiento
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if messages %}
+    <div class="mt-4">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3">
+                <div class="d-flex align-items-center">
+                    {% if message.tags == 'success' %}
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                    {% elif message.tags == 'error' %}
+                        <i class="bi bi-x-circle-fill me-2"></i>
+                    {% elif message.tags == 'warning' %}
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    {% endif %}
+                    <div>{{ message }}</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filtroForm = document.getElementById('filtroForm');
+    if (filtroForm) {
+        filtroForm.addEventListener('submit', function(e) {
+            const box = document.getElementById('id_box').value;
+            const fecha = document.getElementById('id_fecha_asignacion').value;
+            
+            if (!box || !fecha) {
+                e.preventDefault();
+                alert('Por favor selecciona tanto un box como una fecha para buscar disponibilidad');
+            }
+        });
+    }
+
+    const horarioInicio = document.getElementById('id_horario_inicio');
+    const horarioFin = document.getElementById('id_horario_fin');
+    
+    if (horarioInicio && horarioFin) {
+        horarioInicio.addEventListener('change', function() {
+            const inicio = this.value;
+            if (inicio) {
+                Array.from(horarioFin.options).forEach(option => {
+                    option.disabled = option.value && option.value <= inicio;
+                });
+            }
+        });
+    }
+});
+</script>
+
+<style>
+.badge.bg-success {
+    font-size: 0.9em;
+    padding: 0.5em 0.75em;
+    margin: 0.15em;
+}
+.badge.bg-secondary {
+    font-size: 0.9em;
+    padding: 0.5em 0.75em;
+    margin: 0.15em;
+    opacity: 0.8;
+}
+
+.form-select:disabled, .form-select option:disabled {
+    color: #6c757d;
+    background-color: #f8f9fa;
+}
+
+.is-invalid {
+    border-color: #dc3545;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+.invalid-feedback {
+    display: block;
+    color: #dc3545;
+    font-size: 0.875em;
+    margin-top: 0.25rem;
+}
+</style>
+{% endblock %}

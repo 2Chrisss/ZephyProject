@@ -39,7 +39,6 @@
     margin: 0 auto;
   }
 
-  /* En mobile: cambiar orden */
   @media (max-width: 767.98px) {
     .order-mobile-1 {
       order: 1;
@@ -56,7 +55,6 @@
 
 <div class="container mt-4">
   <div class="row gx-4 gx-md-5">
-    <!-- Gráficos -->
     <div class="col-12 col-lg-6 order-mobile-2 mb-4">
       <h2 class="text-center">Ocupación por Intervalos</h2>
       <div class="chart-container">
@@ -68,7 +66,6 @@
       </div>
     </div>
 
-    <!-- Cards -->
     <div class="col-12 col-lg-6 order-mobile-1">
       <div class="row">
         <div class="col-12 col-sm-6 col-md-4 mb-3">
@@ -121,14 +118,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  // Variables globales para los gráficos
   let boxChart;
   let ocupacionChart;
   let topBoxesChart;
   
-  // ... (las funciones initPieChart y initLineChart anteriores se mantienen igual)
 
-  // Nueva función para inicializar el gráfico de top boxes
   function initTopBoxesChart(labels, data) {
     const ctx = document.getElementById('topBoxesChart').getContext('2d');
     topBoxesChart = new Chart(ctx, {
@@ -171,7 +165,6 @@
       }
     });
   }
-  // Inicializar gráfico de pie
   function initPieChart(disponibles, ocupados, noDisponibles) {
     const ctx = document.getElementById('boxChart').getContext('2d');
     boxChart = new Chart(ctx, {
@@ -204,7 +197,6 @@
     });
   }
 
-  // Inicializar gráfico de líneas
   function initLineChart(ocupacionData) {
     const intervalos = ocupacionData.map(item => item.intervalo);
     const ocupados = ocupacionData.map(item => item.ocupados);
@@ -255,14 +247,11 @@
     });
   }
 
-  // Actualizar todos los gráficos
   function updateAllCharts(data) {
-    // Actualizar cards
     document.querySelector(".bg-disponible h5").textContent = data.box_disponibles;
     document.querySelector(".bg-ocupado h5").textContent = data.box_ocupados;
     document.querySelector(".bg-no-disponible h5").textContent = data.box_no_disponibles;
     
-    // Actualizar gráfico de pie
     if (boxChart) {
       boxChart.data.datasets[0].data = [data.box_disponibles, data.box_ocupados, data.box_no_disponibles];
       boxChart.update();
@@ -270,7 +259,6 @@
       initPieChart(data.box_disponibles, data.box_ocupados, data.box_no_disponibles);
     }
     
-    // Actualizar gráfico de líneas
     if (ocupacionChart) {
       const intervalos = data.ocupacion_por_intervalo.map(item => item.intervalo);
       const ocupados = data.ocupacion_por_intervalo.map(item => item.ocupados);
@@ -291,7 +279,6 @@
   }
   
   
-  // Conexión WebSocket
   const socket = new WebSocket('ws://' + window.location.host + '/ws/estadisticas/');
 
   socket.onmessage = function(event) {
@@ -302,25 +289,21 @@
   socket.onopen = () => console.log("WebSocket del dashboard conectado");
   socket.onclose = () => console.log("WebSocket del dashboard desconectado");
 
-  // Inicialización cuando se carga la página
   document.addEventListener('DOMContentLoaded', function() {
-  // Usar los datos iniciales incrustados en la plantilla
   const initialData = {
     box_disponibles: {{ box_disponibles }},
     box_ocupados: {{ box_ocupados }},
     box_no_disponibles: {{ box_no_disponibles }},
-    ocupacion_por_intervalo: [], // Inicialmente vacío, se llenará por WebSocket
+    ocupacion_por_intervalo: [], 
     top_poco_ocupados: {
       labels: [],
       data: []
     }
   };
   
-  // Inicializar gráficos con datos vacíos/básicos
   updateAllCharts(initialData);
   
-  // Los datos reales llegarán por WebSocket casi inmediatamente
-  // y actualizarán los gráficos
+ 
 });
 </script>
 {% endblock %}

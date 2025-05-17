@@ -20,7 +20,7 @@ def check_and_update_boxes():
 
             # 1. MARCAR COMO OCUPADOS si está dentro del horario de alguna asignación
             asignaciones_activas = Boxprofesional.objects.select_related(
-                'box_idbox', 'box_idbox__estadobox_idestadobox'
+                'idbox', 'idbox__estadobox_idestadobox'
             ).filter(
                 fechaasignacion__lte=current_date,
                 fechatermino__gte=current_date,
@@ -31,7 +31,7 @@ def check_and_update_boxes():
             boxes_ocupados_ids = set()
 
             for asignacion in asignaciones_activas:
-                box = asignacion.box_idbox
+                box = asignacion.idbox
                 boxes_ocupados_ids.add(box.idbox)
 
                 if box.estadobox_idestadobox != ocupado_estado:
@@ -51,18 +51,18 @@ def check_and_update_boxes():
 
             # 2. MARCAR COMO DISPONIBLES todos los boxes que NO están en boxes_ocupados_ids
             boxes_disponibles = Boxprofesional.objects.select_related(
-                'box_idbox', 'box_idbox__estadobox_idestadobox'
+                'idbox', 'idbox__estadobox_idestadobox'
             ).filter(
                 fechatermino__lt=current_date
             ) | Boxprofesional.objects.select_related(
-                'box_idbox', 'box_idbox__estadobox_idestadobox'
+                'idbox', 'idbox__estadobox_idestadobox'
             ).filter(
                 fechatermino=current_date,
                 horariofin__lt=current_time
             )
 
             for asignacion in boxes_disponibles:
-                box = asignacion.box_idbox
+                box = asignacion.idbox
 
          
                 if box.idbox not in boxes_ocupados_ids and box.estadobox_idestadobox != disponible_estado:
