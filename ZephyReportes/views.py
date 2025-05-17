@@ -17,57 +17,25 @@ def dashboard(request):
     })
 
 
-def calcular_porcentaje_ocupacion(box, fecha=None):
-    if fecha:
-        fecha_filtro = timezone.datetime.strptime(fecha, "%Y-%m-%d").date()
-    else:
-        fecha_filtro = timezone.now().date()
-
-    ocupaciones = Boxprofesional.objects.filter(
-        box_idbox=box,
-        fechaasignacion__lte=fecha_filtro,
-        fechatermino__gte=fecha_filtro
-    )
-
-    total_am = 0
-    total_pm = 0
-
-    inicio_am = time(8, 0)
-    fin_am = time(12, 0)
-    inicio_pm = time(12, 0)
-    fin_pm = time(17, 0)
-
-    for ocupacion in ocupaciones:
-        if ocupacion.horarioinicio < fin_am and ocupacion.horariofin > inicio_am:
-            hora_inicio = max(ocupacion.horarioinicio, inicio_am)
-            hora_fin = min(ocupacion.horariofin, fin_am)
-            total_am += (hora_fin.hour * 60 + hora_fin.minute) - (hora_inicio.hour * 60 + hora_inicio.minute)
-
-        if ocupacion.horarioinicio < fin_pm and ocupacion.horariofin > inicio_pm:
-            hora_inicio = max(ocupacion.horarioinicio, inicio_pm)
-            hora_fin = min(ocupacion.horariofin, fin_pm)
-            total_pm += (hora_fin.hour * 60 + hora_fin.minute) - (hora_inicio.hour * 60 + hora_inicio.minute)
-
-    porcentaje_am = (total_am / ((fin_am.hour - inicio_am.hour) * 60)) * 100
-    porcentaje_pm = (total_pm / ((fin_pm.hour - inicio_pm.hour) * 60)) * 100
-
-    return round(porcentaje_am, 2), round(porcentaje_pm, 2)
 
 def box_list(request):
     estado = request.GET.get('estado', '')
     pasillo = request.GET.get('pasillo', '')
     fecha_str = request.GET.get('fecha', '')
-    horario = request.GET.get('horario', '')  
+    horario = request.GET.get('horario', '')
 
     todos_los_pasillos = Pasillobox.objects.values_list('nombre', flat=True).distinct()
-    pasillos=  Pasillobox.objects.all().order_by('idpasillobox')
-    boxes = Box.objects.exclude(idbox__isnull=True).order_by('numerobox')
+    boxes = Box.objects.all().order_by('numerobox')
 
     if estado:
-        boxes = boxes.filter(estadobox_idestadobox=estado)
+        try:
+            estado_id = int(estado)
+            boxes = boxes.filter(estadobox_idestadobox=estado_id)
+        except ValueError:
+            pass
+
     if pasillo:
         boxes = boxes.filter(pasillobox_idpasillobox__nombre=pasillo)
-
 
     if fecha_str:
         try:
@@ -78,19 +46,21 @@ def box_list(request):
         fecha = timezone.now().date()
 
     boxes_por_pasillo = defaultdict(list)
+
     for box in boxes:
         ocupaciones = Boxprofesional.objects.filter(
-            box_idbox=box,
+            idbox=box,
             fechaasignacion__lte=fecha,
             fechatermino__gte=fecha
         )
+
         if horario == 'AM':
             ocupaciones = ocupaciones.filter(horarioinicio__lt=time(12, 0))
         elif horario == 'PM':
             ocupaciones = ocupaciones.filter(horarioinicio__gte=time(12, 0))
 
         if ocupaciones.exists() or not fecha_str:
-            porcentaje_am, porcentaje_pm = calcular_porcentaje_ocupacion(box, fecha_str)
+            porcentaje_am, porcentaje_pm = Boxprofesional.calcular_porcentaje_ocupacion_con_ocupaciones(ocupaciones)
             pasillo_nombre = box.pasillobox_idpasillobox.nombre
             boxes_por_pasillo[pasillo_nombre].append({
                 'box': box,
@@ -109,7 +79,7 @@ def box_list(request):
 def box_detalle(request, box_id):
     box = get_object_or_404(Box, idbox=box_id)
     ocupaciones_qs = Boxprofesional.objects.filter(
-        box_idbox=box,
+        idbox=box,
         fechaasignacion=date.today()
     ).order_by('fechaasignacion')
 
@@ -119,17 +89,15 @@ def box_detalle(request, box_id):
         inicio_min = ocupacion.horarioinicio.hour * 60 + ocupacion.horarioinicio.minute
         fin_min = ocupacion.horariofin.hour * 60 + ocupacion.horariofin.minute
         duracion = fin_min - inicio_min
-        horas_por_doctor[ocupacion.profesional_idprofesional.nombre] += duracion
+        horas_por_doctor[ocupacion.idprofesional.nombre] += duracion
         ocupaciones.append({
-            'profesional': ocupacion.profesional_idprofesional,
+            'profesional': ocupacion.idprofesional,
             'inicio_min': inicio_min,
             'fin_min': fin_min,
         })
 
-    # Formatea las horas totales como "Xh Ym"
     horas_por_doctor_fmt = {doctor: f"{minutos // 60}h {minutos % 60}m" for doctor, minutos in horas_por_doctor.items()}
 
-    # Generar intervalos de 30 minutos entre 08:00 y 17:30
     intervalos = []
     start = 8 * 60
     end = 17 * 60 + 30

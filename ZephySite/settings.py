@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'ZephyReportes.apps.ZephyReportesAppConfig',
     'ZephyEstadisticas.apps.ZephyestadisticasConfig',
+    'ZephyAgendamiento'
 
 ]
 CHANNEL_LAYERS = {
@@ -133,6 +134,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'ZephyReportes' / 'static',
     BASE_DIR / 'ZephyEstadisticas' / 'static',
+    BASE_DIR / 'ZephyAgendamiento' / 'static',
+
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Default primary key field type

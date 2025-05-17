@@ -17,12 +17,14 @@ def obtener_estadisticas():
         time(17, 0), time(17, 30)
     ]
     
+    hoy = datetime.now().date()
 
     ocupacion_por_intervalo = []
     for intervalo in intervalos:
         ocupados = Boxprofesional.objects.filter(
             horarioinicio__lte=intervalo,
-            horariofin__gte=intervalo
+            horariofin__gte=intervalo,
+            fechaasignacion=hoy
         ).count()
         disponibles = Box.objects.count() - ocupados
         
@@ -32,15 +34,14 @@ def obtener_estadisticas():
             'disponibles': disponibles
         })
     
-    hoy = datetime.now().date()
 
 
     boxes_poco_ocupados = list(Boxprofesional.objects.filter(
         fechaasignacion=hoy,
     ).values(
-        'box_idbox__numerobox'
+        'idbox__numerobox'
     ).annotate(
-        total_ocupaciones=Count('idboxprofesionalcol')
+        total_ocupaciones=Count('idboxprofesional')
     ).order_by('total_ocupaciones')[:5])  
 
     if len(boxes_poco_ocupados) < 5:
@@ -48,18 +49,18 @@ def obtener_estadisticas():
         boxes_sin_ocupaciones = Box.objects.exclude(
             idbox__in=Boxprofesional.objects.filter(
                 fechaasignacion=hoy
-            ).values_list('box_idbox', flat=True)
+            ).values_list('idbox', flat=True)
         ).values('numerobox')[:5 - len(boxes_poco_ocupados)]
         
         for box in boxes_sin_ocupaciones:
   
             boxes_poco_ocupados.append({
-                'box_idbox__numerobox': box['numerobox'],
+                'idbox__numerobox': box['numerobox'],
                 'total_ocupaciones': 0
             })
 
     top_poco_ocupados = {
-        'labels': [box['box_idbox__numerobox'] for box in boxes_poco_ocupados],
+        'labels': [box['idbox__numerobox'] for box in boxes_poco_ocupados],
         'data': [box['total_ocupaciones'] for box in boxes_poco_ocupados]
     }
 

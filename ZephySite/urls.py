@@ -5,5 +5,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('ZephyReportes.urls')), 
     path('zephy_estadisticas/', include('ZephyEstadisticas.urls')),  # Aquí debes incluir tus URLs de la app
+    path('agendamiento/', include('ZephyAgendamiento.urls')),
 
 ]
