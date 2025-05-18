@@ -181,8 +181,9 @@
 </div>
 
 <script>
-const socket = new WebSocket('ws://' + window.location.host + '/ws/boxes/');
-
+  const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+  const ws_url = `${ws_scheme}://${window.location.host}/ws/boxes/`;
+  const socket = new WebSocket(ws_url);
 socket.onmessage = function(event) {
     const data = JSON.parse(event.data);
     const boxElement = document.getElementById('box-' + data.box_id);

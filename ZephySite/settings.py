@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-+u!o^tff)xl-0mbvyc&d-vp!a0_$%6@8m_-fm2c=hi0j9w$9cd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.ngrok-free.app']
 
 
 # Application definition
@@ -62,7 +62,9 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'ZephySite.urls'
-
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.ngrok-free.app",
+]
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
