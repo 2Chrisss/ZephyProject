@@ -1,3 +1,5 @@
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from datetime import datetime, time, date
@@ -5,7 +7,6 @@ from .forms import AgendarBoxForm, generar_bloques_horarios
 from ZephyReportes.models import Boxprofesional, Box, Profesional
 from ZephyReportes.estado import EstadoDisponible, EstadoOcupado, EstadoNoDisponible
 from django.utils.timezone import now
-
 def obtener_rangos_ocupados(box, fecha):
     """Obtiene los rangos horarios ocupados usando el patrón State"""
     estado = box.get_estado_instance()
@@ -55,6 +56,7 @@ def agendar_box(request):
                 ):
                     raise ValueError("No se puede agendar en el estado actual del box")
                 
+                # Crear el agendamiento
                 Boxprofesional.objects.create(
                     idbox=box,
                     idprofesional=form.cleaned_data['profesional'],
@@ -64,8 +66,21 @@ def agendar_box(request):
                     horariofin=datetime.strptime(form.cleaned_data['horario_fin'], "%H:%M").time()
                 )
                 
+                # Cambiar estado si es necesario
                 if isinstance(estado, EstadoDisponible):
                     estado.clickAsignar()
+                
+                # Enviar actualización a través del WebSocket
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    "boxes_updates",  # Este debe coincidir con el group_name en tu consumer
+                    {
+                        'type': 'box_update',
+                        'box_id': box.idbox,
+                        'box_number': box.numerobox,
+                        'new_status_class': 'bg-ocupado',  # Clase CSS para estado ocupado
+                    }
+                )
                 
                 messages.success(request, "Agendamiento creado exitosamente")
                 return redirect('agendar_box')
