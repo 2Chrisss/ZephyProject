@@ -4,7 +4,7 @@ from .models import *
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.utils import timezone
-from datetime import time,datetime, date
+from datetime import time,datetime, date, timedelta
 
 def dashboard(request):
     box_disponibles = Box.objects.filter(estadobox_idestadobox='1').count()
@@ -74,6 +74,21 @@ def box_list(request):
         'fecha_filtro': fecha_str,
         'horario_filtro': horario,
     })
+def generar_intervalos(inicio_str='08:00', fin_str='00:00'):
+    intervalos = []
+    inicio = datetime.strptime(inicio_str, '%H:%M')
+    if fin_str == '00:00':
+        fin = datetime.strptime('23:59', '%H:%M') + timedelta(minutes=1)
+    else:
+        fin = datetime.strptime(fin_str, '%H:%M')
+    actual = inicio
+    while actual < fin:
+        siguiente = actual + timedelta(minutes=30)
+        label = f"{actual.strftime('%H:%M')}-{siguiente.strftime('%H:%M')}"
+        total_min = actual.hour * 60 + actual.minute
+        intervalos.append({'label': label, 'total_min': total_min})
+        actual = siguiente
+    return intervalos
 
 
 def box_detalle(request, box_id):
@@ -98,13 +113,18 @@ def box_detalle(request, box_id):
 
     horas_por_doctor_fmt = {doctor: f"{minutos // 60}h {minutos % 60}m" for doctor, minutos in horas_por_doctor.items()}
 
+    # Generar intervalos de media hora con formato "08:00-08:30"
     intervalos = []
     start = 8 * 60
-    end = 17 * 60 + 30
-    for minutos in range(start, end + 1, 30):
-        h = minutos // 60
-        m = minutos % 60
-        intervalos.append({'label': f"{h:02d}:{m:02d}", 'total_min': minutos})
+    end = 17.5* 60  
+    actual = start
+    while actual < end:
+        siguiente = actual + 30
+        h1, m1 = divmod(actual, 60)
+        h2, m2 = divmod(siguiente, 60)
+        label = f"{h1:02d}:{m1:02d}-{h2:02d}:{m2:02d}"
+        intervalos.append({'label': label, 'total_min': actual})
+        actual = siguiente
 
     return render(request, 'box_detalle.html', {
         'box': box,

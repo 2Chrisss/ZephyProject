@@ -1,72 +1,74 @@
 {% extends "base.html" %}
 {% block title %}Detalle Box{% endblock %}
 {% block content %}
-<div class="text-center my-4">
-    <h1 class="display-3 fw-bold" style="font-size: 3rem;">
-        <strong>Detalle Box {{ box.numerobox }}</strong>
-    </h1>
-</div>
+<div class="container">
+  <div class="text-center my-4">
+      <h1 class="display-3 fw-bold" style="font-size: 3rem;">
+          <strong>Detalle Box {{ box.numerobox }}</strong>
+      </h1>
+  </div>
 
-<div class="row justify-content-center mb-3">
-    <div class="col-auto">
-        <p class="fs-5 mb-1"><strong>Estado:</strong> {{ box.estadobox_idestadobox.nombre }}</p>
-        <p class="fs-5"><strong>Hora actual:</strong> <span id="live-clock"></span></p>
-    </div>
-</div>
-<div class="text-center mb-3">
-    <h2 class="fw-semibold"><strong>Ocupaciones</strong></h2>
-</div>
-<table class="table table-bordered align-middle text-center">
-    <thead class="table-light">
-        <tr>
-            <th>Doctor</th>
-            {% for intervalo in intervalos %}
-                <th>{{ intervalo.label }}</th>
-            {% endfor %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for ocupacion in ocupaciones %}
-        <tr>
-            <td class="fw-semibold">{{ ocupacion.profesional.nombre }}</td>
-            {% for intervalo in intervalos %}
-                <td>
-                    {% if ocupacion.inicio_min <= intervalo.total_min and intervalo.total_min < ocupacion.fin_min %}
-                        <span class="badge bg-primary">Ocupado</span>
-                    {% endif %}
-                </td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-</div>
-
-<div class="text-center mb-3">
-    <h2 class="fw-semibold"><strong>Horas Trabajadas Por Profesional</strong></h2>
-</div>
-<div class="table-responsive mb-4">
+  <div class="row justify-content-center mb-3">
+      <div class="col-12 col-md-auto">
+          <p class="fs-5 mb-1"><strong>Estado:</strong> {{ box.estadobox_idestadobox.nombre }}</p>
+          <p class="fs-5"><strong>Hora actual:</strong> <span id="live-clock"></span></p>
+      </div>
+  </div>
+  <div class="text-center mb-3">
+      <h2 class="fw-semibold"><strong>Ocupaciones</strong></h2>
+  </div>
+  <div class="table-responsive mb-4">
     <table class="table table-bordered align-middle text-center">
         <thead class="table-light">
             <tr>
                 <th>Doctor</th>
-                <th>Horas Totales</th>
+                {% for intervalo in intervalos %}
+                    <th>{{ intervalo.label }}</th>
+                {% endfor %}
             </tr>
         </thead>
         <tbody>
-            {% for doctor, horas in horas_por_doctor.items %}
+            {% for ocupacion in ocupaciones %}
             <tr>
-                <td class="fw-semibold">{{ doctor }}</td>
-                <td>{{ horas }}</td>
+                <td class="fw-semibold">{{ ocupacion.profesional.nombre }}</td>
+                {% for intervalo in intervalos %}
+                    <td>
+                        {% if ocupacion.inicio_min <= intervalo.total_min and intervalo.total_min < ocupacion.fin_min %}
+                            <span class="badge bg-primary">Ocupado</span>
+                        {% endif %}
+                    </td>
+                {% endfor %}
             </tr>
             {% endfor %}
         </tbody>
     </table>
-</div>
+  </div>
 
-<div class="text-center mt-4">
-    <a href="{% url 'box_list' %}" class="btn btn-primary btn-lg">Volver</a>
+  <div class="text-center mb-3">
+      <h2 class="fw-semibold"><strong>Horas Trabajadas Por Profesional</strong></h2>
+  </div>
+  <div class="table-responsive mb-4">
+      <table class="table table-bordered align-middle text-center">
+          <thead class="table-light">
+              <tr>
+                  <th>Doctor</th>
+                  <th>Horas Totales</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for doctor, horas in horas_por_doctor.items %}
+              <tr>
+                  <td class="fw-semibold">{{ doctor }}</td>
+                  <td>{{ horas }}</td>
+              </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+  </div>
+
+  <div class="text-center mt-4">
+      <a href="{% url 'box_list' %}" class="btn btn-primary btn-lg">Volver</a>
+  </div>
 </div>
 <script>
 function updateClock() {
