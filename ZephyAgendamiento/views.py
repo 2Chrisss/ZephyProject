@@ -66,10 +66,15 @@ def agendar_box(request):
                     horariofin=datetime.strptime(form.cleaned_data['horario_fin'], "%H:%M").time()
                 )
                 
-                # Cambiar estado si es necesario
-                if isinstance(estado, EstadoDisponible):
-                    estado.clickAsignar()
-                
+                fecha_actual = now().date()
+                hora_actual = now().time()
+                horario_inicio = datetime.strptime(form.cleaned_data['horario_inicio'], "%H:%M").time()
+                horario_fin = datetime.strptime(form.cleaned_data['horario_fin'], "%H:%M").time()
+
+                if (form.cleaned_data['fecha_asignacion'] == fecha_actual and 
+                    horario_inicio <= hora_actual <= horario_fin):
+                    if isinstance(estado, EstadoDisponible):
+                        estado.clickAsignar()
                 # Enviar actualización a través del WebSocket
                 channel_layer = get_channel_layer()
                 async_to_sync(channel_layer.group_send)(
