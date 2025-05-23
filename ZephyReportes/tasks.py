@@ -29,12 +29,21 @@ def check_and_update_boxes():
             )
 
             boxes_ocupados_ids = set()
-
+            
+            # 1. MARCAR COMO OCUPADOS
             for asignacion in asignaciones_activas:
                 box = asignacion.idbox
                 boxes_ocupados_ids.add(box.idbox)
 
                 if box.estadobox_idestadobox != ocupado_estado:
+                    ocupaciones_del_dia = Boxprofesional.objects.filter(
+                    idbox=box,
+                    fechaasignacion__lte=current_date,
+                    fechatermino__gte=current_date
+                    )
+                    porcentaje_am, porcentaje_pm = Boxprofesional.calcular_porcentaje_ocupacion_con_ocupaciones(ocupaciones_del_dia)
+
+
                     box.estadobox_idestadobox = ocupado_estado
                     box.save()
 
@@ -45,9 +54,12 @@ def check_and_update_boxes():
                             'type': 'box_update',
                             'box_id': box.idbox,
                             'box_number': box.numerobox,
-                            'new_status_class': 'bg-ocupado'  
+                            'new_status_class': 'bg-ocupado',
+                            'porcentaje_am': porcentaje_am,
+                            'porcentaje_pm': porcentaje_pm,
                         }
                     )
+
 
             # 2. MARCAR COMO DISPONIBLES todos los boxes que NO están en boxes_ocupados_ids
             boxes_disponibles = Boxprofesional.objects.select_related(
@@ -66,6 +78,12 @@ def check_and_update_boxes():
 
          
                 if box.idbox not in boxes_ocupados_ids and box.estadobox_idestadobox != disponible_estado:
+                    ocupaciones_del_dia = Boxprofesional.objects.filter(
+                    idbox=box,
+                    fechaasignacion__lte=current_date,
+                    fechatermino__gte=current_date
+                    )
+                    porcentaje_am, porcentaje_pm = Boxprofesional.calcular_porcentaje_ocupacion_con_ocupaciones(ocupaciones_del_dia)
                     box.estadobox_idestadobox = disponible_estado
                     box.save()
 
@@ -76,7 +94,9 @@ def check_and_update_boxes():
                             'type': 'box_update',
                             'box_id': box.idbox,
                             'box_number': box.numerobox,
-                            'new_status_class': 'bg-disponible' 
+                            'new_status_class': 'bg-disponible',
+                            'porcentaje_am': porcentaje_am,
+                            'porcentaje_pm': porcentaje_pm,
                         }
                     )
 

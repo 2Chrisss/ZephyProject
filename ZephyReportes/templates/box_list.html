@@ -277,14 +277,18 @@
   };
 
   function updatePercentages(data) {
-      const updateElement = (id, value) => {
-          const element = document.getElementById(id);
-          if (element) element.textContent = value;
-      };
-      
-      updateElement(`porcentaje-am-${data.box_id}`, data.porcentaje_am);
-      updateElement(`porcentaje-pm-${data.box_id}`, data.porcentaje_pm);
-  }
+    // Verificar si los datos tienen porcentajes válidos
+    if (data.porcentaje_am !== undefined && data.porcentaje_am !== null) {
+        const amElement = document.getElementById(`porcentaje-am-${data.box_id}`);
+        if (amElement) amElement.textContent = data.porcentaje_am;
+    }
+    
+    if (data.porcentaje_pm !== undefined && data.porcentaje_pm !== null) {
+        const pmElement = document.getElementById(`porcentaje-pm-${data.box_id}`);
+        if (pmElement) pmElement.textContent = data.porcentaje_pm;
+    }
+}
+  
   socket.onopen = function() {
     console.log('WebSocket conectado');
   };

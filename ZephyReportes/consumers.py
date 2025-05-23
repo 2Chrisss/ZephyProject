@@ -22,20 +22,20 @@ class BoxConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(
             self.group_name,
             {
-                'type': 'box_update',
-                'box_id': data.get('box_id'),
-                'box_number': data.get('box_number'),
-                'new_status_class': data.get('new_status_class'),
-                'porcentaje_am': event['porcentaje_am'],
-                'porcentaje_pm': event['porcentaje_pm'],
+            'type': 'box_update',
+            'box_id': data.get('box_id'),
+            'box_number': data.get('box_number'),
+            'new_status_class': data.get('new_status_class'),
+            'porcentaje_am': data.get('porcentaje_am'),
+            'porcentaje_pm': data.get('porcentaje_pm'),
             }
         )
 
     async def box_update(self, event):
-            await self.send(text_data=json.dumps({
-                'box_id': event['box_id'],
-                'box_number': event['box_number'],
-                'new_status_class': event['new_status_class'],
-                'porcentaje_am': event['porcentaje_am'],
-                'porcentaje_pm': event['porcentaje_pm'],
-            }))
+        await self.send(text_data=json.dumps({
+            'box_id': event.get('box_id'),
+            'box_number': event.get('box_number'),
+            'new_status_class': event.get('new_status_class'),
+            'porcentaje_am': event.get('porcentaje_am'),
+            'porcentaje_pm': event.get('porcentaje_pm'),
+        }))
