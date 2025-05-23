@@ -1,23 +1,23 @@
-
 <header class="text-white px-4 py-3 position-relative d-flex align-items-center justify-content-between" style="background-color: #3E6CD3;">
   
-    <div style="width: 200px;"></div>
+    <!-- Espacio izquierdo - Visible siempre -->
+    <div style="width: 600px;"></div>
   
-
-    <div class="flex-grow-1 d-flex justify-content-center">
-      <input type="text" class="form-control w-50" placeholder="Buscar...">
+    <!-- Campo de búsqueda - Oculto en móviles -->
+    <div class="flex-grow-1 d-flex justify-content-center d-none d-md-block">
+      <input type="text" class="form-control" placeholder="Buscar..." style="width: 50%;">
     </div>
   
+    <!-- Área de usuario - Se expande cuando el buscador está oculto -->
     <div class="d-flex align-items-center gap-3" style="width: 200px; justify-content: end;">
       <div class="text-end">
-        <div class="fw-semibold">Solange</div>
-        <div class="fs-6">López</div>
+        <div class="fw-semibold">¡Bienvenido</div>
+        <div class="fw-semibold">Usuario!</div>
       </div>
       <div class="rounded-circle bg-white text-dark d-flex justify-content-center align-items-center" style="width: 40px; height: 40px;">
         <i class="bi bi-person-fill"></i>
       </div>
     </div>
-  </header>
+</header>
   
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
