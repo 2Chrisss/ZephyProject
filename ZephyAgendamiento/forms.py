@@ -2,7 +2,7 @@ from django import forms
 from datetime import time, datetime, timedelta
 from ZephyReportes.models import Box, Profesional
 
-def generar_bloques_horarios(hora_inicio=time(8, 0), hora_fin=time(21,0), intervalo=30, excluir_ranges=None):
+def generar_bloques_horarios(hora_inicio=time(8, 0), hora_fin=time(18,0), intervalo=30, excluir_ranges=None):
     excluir_ranges = excluir_ranges or []
     bloques = []
     actual = datetime.combine(datetime.today(), hora_inicio)
