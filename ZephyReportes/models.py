@@ -3,6 +3,7 @@ from django.utils import timezone
 from datetime import time,datetime, date
 from .estado import EstadoDisponible, EstadoOcupado, EstadoNoDisponible
 
+from django.db.models import Avg
 
 class AuthGroup(models.Model):
     name = models.CharField(unique=True, max_length=150)
@@ -187,7 +188,11 @@ class Box(models.Model):
     numerobox = models.CharField(db_column='numeroBox', max_length=10, blank=True, null=True)  # Field name made lowercase.
     ubicacionbox = models.CharField(db_column='ubicacionBox', max_length=200, blank=True, null=True)  # Field name made lowercase.
     pasillobox_idpasillobox = models.ForeignKey('Pasillobox', models.DO_NOTHING, db_column='pasilloBox_idPasilloBox', blank=True, null=True)  # Field name made lowercase.
-    
+    def get_porcentajes(self):
+        box_profesionales = Boxprofesional.objects.filter(idbox=self)
+        porcentaje_am = box_profesionales.aggregate(avg_am=Avg('porcentaje_am'))['avg_am'] or 0
+        porcentaje_pm = box_profesionales.aggregate(avg_pm=Avg('porcentaje_pm'))['avg_pm'] or 0
+        return porcentaje_am, porcentaje_pm
     def get_estado_instance(self):
         if self.estadobox_idestadobox_id == 1:
             return EstadoDisponible(self)

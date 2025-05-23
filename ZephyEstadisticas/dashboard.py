@@ -22,7 +22,7 @@ def obtener_estadisticas():
     ocupacion_por_intervalo = []
     for intervalo in intervalos:
         ocupados = Boxprofesional.objects.filter(
-            horarioinicio__lte=intervalo,
+            horarioinicio__lt=intervalo,
             horariofin__gte=intervalo,
             fechaasignacion=hoy
         ).count()

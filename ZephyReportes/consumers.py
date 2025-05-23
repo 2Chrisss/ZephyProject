@@ -26,12 +26,16 @@ class BoxConsumer(AsyncWebsocketConsumer):
                 'box_id': data.get('box_id'),
                 'box_number': data.get('box_number'),
                 'new_status_class': data.get('new_status_class'),
+                'porcentaje_am': event['porcentaje_am'],
+                'porcentaje_pm': event['porcentaje_pm'],
             }
         )
 
     async def box_update(self, event):
-        await self.send(text_data=json.dumps({
-            'box_id': event['box_id'],
-            'box_number': event['box_number'],
-            'new_status_class': event['new_status_class'],
-        }))
+            await self.send(text_data=json.dumps({
+                'box_id': event['box_id'],
+                'box_number': event['box_number'],
+                'new_status_class': event['new_status_class'],
+                'porcentaje_am': event['porcentaje_am'],
+                'porcentaje_pm': event['porcentaje_pm'],
+            }))

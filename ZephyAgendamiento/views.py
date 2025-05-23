@@ -71,19 +71,34 @@ def agendar_box(request):
                 horario_inicio = datetime.strptime(form.cleaned_data['horario_inicio'], "%H:%M").time()
                 horario_fin = datetime.strptime(form.cleaned_data['horario_fin'], "%H:%M").time()
 
+                ocupaciones = Boxprofesional.objects.filter(
+                    idbox=box, 
+                    fechaasignacion__lte=fecha_actual, 
+                    fechatermino__gte=fecha_actual
+                )
+                
+                # Calcular porcentajes
+                porcentaje_am, porcentaje_pm = Boxprofesional.calcular_porcentaje_ocupacion_con_ocupaciones(ocupaciones)
+                
+                # Determinar si hay que cambiar el estado visual
+                new_status_class = None
                 if (form.cleaned_data['fecha_asignacion'] == fecha_actual and 
                     horario_inicio <= hora_actual <= horario_fin):
                     if isinstance(estado, EstadoDisponible):
                         estado.clickAsignar()
-                # Enviar actualización a través del WebSocket
+                    new_status_class = 'bg-ocupado'
+                
+                # Enviar actualización via WebSocket
                 channel_layer = get_channel_layer()
                 async_to_sync(channel_layer.group_send)(
-                    "boxes_updates",  # Este debe coincidir con el group_name en tu consumer
+                    "boxes_updates",  
                     {
                         'type': 'box_update',
                         'box_id': box.idbox,
                         'box_number': box.numerobox,
-                        'new_status_class': 'bg-ocupado',  # Clase CSS para estado ocupado
+                        'new_status_class': new_status_class,
+                        'porcentaje_am': porcentaje_am,
+                        'porcentaje_pm': porcentaje_pm,
                     }
                 )
                 

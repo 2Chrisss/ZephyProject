@@ -20,12 +20,111 @@
     background-color: #abbcf5;
     color: black !important;
   }
+
+  /* Responsividad filtros */
+  form.d-flex {
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+  }
+  form.d-flex > .mx-auto {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    width: 100%;
+  }
+  form.d-flex .d-flex.flex-column {
+    min-width: 140px;
+    flex: 1 1 140px;
+    max-width: 220px;
+  }
+  form.d-flex select.form-select,
+  form.d-flex input.form-control {
+    width: 100%;
+  }
+  form.d-flex button.btn {
+    min-width: 120px;
+  }
+
+  /* Ajustes generales de layout */
+  .box-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 10px 10px 30px;
+  }
+
+  .pasillo-container {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    padding: 15px;
+    background-color: #f8f9fa;
+  }
+
+  .pasillo-separator {
+    text-align: center;
+    font-weight: bold;
+    color: #333;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+  }
+
+  .inner-box-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 10px;
+  }
+
+  .box-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 8px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    gap: 5px;
+    min-height: 70px;
+    font-size: 12px;
+  }
+
+  .box-card div {
+    font-size: 11px;
+  }
+
+  .bg-warning.text-dark {
+    color: #212529 !important;
+  }
+
+  /* Mejoras para móviles */
+  @media (max-width: 576px) {
+    .inner-box-grid {
+      grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    }
+    form.d-flex .d-flex.flex-column {
+      flex: 1 1 100%;
+      max-width: 100%;
+    }
+    form.d-flex button.btn {
+      width: 100%;
+      min-width: auto;
+    }
+  }
 </style>
+
 <h1 class="display-4 text-center fw-semibold mb-4 mt-3 hover-effect">
   Disponibilidad de Boxes
 </h1>
-<div class="mb-4 d-flex justify-content-between align-items-center flex-wrap">
 
+<div class="mb-4 d-flex justify-content-between align-items-center flex-wrap">
   <form method="get" action="" class="d-flex align-items-end gap-3">
     <div class="mx-auto d-flex align-items-end gap-3 flex-wrap">
       <div class="d-flex flex-column align-items-center">
@@ -51,6 +150,7 @@
           {% endfor %}
         </select>
       </div>
+
       <div class="d-flex flex-column align-items-center">
         <div class="p-2 mb-2 rounded" style="background-color: #3E6CD3; color: white; font-weight: bold;">
           Filtrar por fecha
@@ -58,7 +158,7 @@
         <input type="date" id="fecha" name="fecha" class="form-control"
                value="{{ request.GET.fecha|default_if_none:'' }}">
       </div>
-      
+
       <div class="d-flex flex-column align-items-center">
         <div class="p-2 mb-2 rounded" style="background-color: #3E6CD3; color: white; font-weight: bold;">
           Filtrar por horario
@@ -69,111 +169,60 @@
           <option value="PM" {% if horario_filtro == 'PM' %}selected{% endif %}>PM</option>
         </select>
       </div>
+
       <div class="d-flex justify-content-center mt-3">
         <button type="submit" class="btn btn-primary w-100 w-sm-auto">Filtrar</button>
       </div>
     </div>
   </form>
-  <div class="d-flex flex-column align-items-center mt-3 mt-lg-0">
-    <div class="mb-2 d-flex gap-2 flex-wrap justify-content-center">
+
+  <!-- Versión para PC (se muestra sólo en pantallas lg y mayores) -->
+  <div class="d-none d-lg-flex justify-content-center">
+    <div class="text-center">
+      <div class="mb-2 d-flex gap-2 flex-wrap justify-content-center">
+        <span class="badge bg-disponible">Disponible</span>
+        <span class="badge bg-ocupado">Ocupado</span>
+        <span class="badge bg-no-disponible">No Disponible</span>
+      </div>
+      
+      <div>
+        <strong>Hora actual:</strong> <span id="live-clock"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Versión para teléfono (se muestra sólo en pantallas menores a lg) -->
+  <div class="d-flex d-lg-none flex-column align-items-center justify-content-center w-100 mt-3 mt-lg-0">
+    <div class="mb-2 d-flex gap-2 flex-wrap justify-content-center w-100">
       <span class="badge bg-disponible">Disponible</span>
       <span class="badge bg-ocupado">Ocupado</span>
-      <span class="badge bg-no-disponible" >No Disponible</span>
+      <span class="badge bg-no-disponible">No Disponible</span>
     </div>
-  
+    
     <div>
       <strong>Hora actual:</strong> <span id="live-clock"></span>
     </div>
   </div>
 </div>
 
-<style>
-.box-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-  padding: 20px;
-}
-
-.pasillo-container {
-  display: flex;
-  flex-direction: column;
-  border: 2px solid #ccc;
-  border-radius: 10px;
-  padding: 15px;
-  background-color: #f8f9fa;
-}
-
-.pasillo-separator {
-  text-align: center;
-  font-weight: bold;
-  color: #333;
-  border-bottom: 2px solid #ccc;
-  padding-bottom: 8px;
-  margin-bottom: 15px;
-  font-size: 1.2rem;
-}
-
-.inner-box-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: 10px;
-}
-
-.box-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 8px;
-  border-radius: 8px;
-  text-decoration: none;
-  color: white;
-  font-weight: bold;
-  text-align: center;
-  gap: 5px;
-  min-height: 70px;
-  font-size: 12px;
-}
-
-.box-card div {
-  font-size: 11px;
-}
-
-.bg-warning.text-dark {
-  color: #212529 !important;
-}
-
-@media (max-width: 576px) {
-  .inner-box-grid {
-    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-  }
-}
-
-</style>
 <div class="box-grid">
   {% for pasillo, boxes_grupo in boxes_por_pasillo.items %}
     <div class="pasillo-container">
       <div class="pasillo-separator">{{ pasillo }}</div>
       <div class="inner-box-grid">
         {% for box in boxes_grupo %}
-            <a 
+          <a 
             href="{% url 'box_detalle' box.box.idbox %}" 
             id="box-{{ box.box.idbox }}" 
             class="box-card
-              {% if box.box.estadobox_idestadobox.nombre == 'Disponible' %}
-                bg-disponible 
-              {% elif box.box.estadobox_idestadobox.nombre == 'Ocupado' %}
-                bg-ocupado
-              {% elif box.box.estadobox_idestadobox.nombre == 'No disponible' %}
-                bg-no-disponible 
-              {% else %}
-                bg-secondary
-              {% endif %}">
+              {% if box.box.estadobox_idestadobox.nombre == 'Disponible' %} bg-disponible 
+              {% elif box.box.estadobox_idestadobox.nombre == 'Ocupado' %} bg-ocupado
+              {% elif box.box.estadobox_idestadobox.nombre == 'No disponible' %} bg-no-disponible 
+              {% else %} bg-secondary {% endif %}">
             <div><strong>Box {{ box.box.numerobox }}</strong></div>
-            <div><strong>AM:</strong> {{ box.porcentaje_am }}%</div>
-            <div><strong>PM:</strong> {{ box.porcentaje_pm }}%</div>
-            </a>
+            <div><strong>AM:</strong> <span id="porcentaje-am-{{ box.box.idbox }}">{{ box.porcentaje_am }}</span>%</div>
+            <div><strong>PM:</strong> <span id="porcentaje-pm-{{ box.box.idbox }}">{{ box.porcentaje_pm }}</span>%</div>
+          </a>
         {% endfor %}
       </div>
     </div>
@@ -181,29 +230,68 @@
 </div>
 
 <script>
+  if (typeof showToast !== 'function') {
+    console.error('showToast no está definido!');
+    // Define una versión de emergencia
+    window.showToast = function(message) {
+      console.log('[Toast fallback]:', message);
+      alert(message); // Fallback básico
+    };
+  }
   const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
   const ws_url = `${ws_scheme}://${window.location.host}/ws/boxes/`;
   const socket = new WebSocket(ws_url);
-socket.onmessage = function(event) {
+  socket.onmessage = function(event) {
     const data = JSON.parse(event.data);
     const boxElement = document.getElementById('box-' + data.box_id);
+    
     if (boxElement) {
-        boxElement.classList.remove('bg-disponible', 'bg-ocupado', 'bg-no-disponible', 'text-dark', 'bg-secondary');
-        boxElement.classList.add(data.new_status_class);
-        showToast(`Hubo una actualización en el box ${data.box_number}`);
-        if (data.new_status_class === 'bg-warning') {
-            boxElement.classList.add('text-dark');
+        // Solo remover clases si vamos a aplicar una nueva
+        if (data.new_status_class !== null && data.new_status_class !== undefined) {
+            boxElement.classList.remove(
+                'bg-disponible', 
+                'bg-ocupado', 
+                'bg-no-disponible',
+                'bg-warning'
+            );
+            boxElement.classList.add(data.new_status_class);
+            
+            if (data.new_status_class === 'bg-warning') {
+                boxElement.classList.add('text-dark');
+            } else {
+                boxElement.classList.remove('text-dark');
+            }
         }
+        
+        // Actualizar porcentajes
+        updatePercentages(data);
+        
+        setTimeout(() => {
+        try {
+          showToast(`Hubo una actualización en el box ${data.box_number}`);
+        } catch (e) {
+          console.error('Error al mostrar toast:', e);
+        }
+      }, 100);
     }
-};
+  };
 
-socket.onopen = function() {
+  function updatePercentages(data) {
+      const updateElement = (id, value) => {
+          const element = document.getElementById(id);
+          if (element) element.textContent = value;
+      };
+      
+      updateElement(`porcentaje-am-${data.box_id}`, data.porcentaje_am);
+      updateElement(`porcentaje-pm-${data.box_id}`, data.porcentaje_pm);
+  }
+  socket.onopen = function() {
     console.log('WebSocket conectado');
-};
+  };
 
-socket.onclose = function() {
+  socket.onclose = function() {
     console.log('WebSocket desconectado');
-};
+  };
 </script>
 
 <script>
@@ -213,10 +301,18 @@ function updateClock() {
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
   const timeString = `${hours}:${minutes}:${seconds}`;
-  document.getElementById('live-clock').textContent = timeString;
+  
+  // Actualizar TODOS los relojes
+  document.querySelectorAll('[id="live-clock"]').forEach(clock => {
+    clock.textContent = timeString;
+  });
 }
-setInterval(updateClock, 1000);
-window.onload = updateClock;
+
+// Iniciar
+document.addEventListener('DOMContentLoaded', function() {
+  updateClock();
+  setInterval(updateClock, 1000);
+});
 </script>
 
 {% endblock %}
