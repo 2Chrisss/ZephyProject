@@ -4,6 +4,8 @@ from datetime import time,datetime, date
 from .estado import EstadoDisponible, EstadoOcupado, EstadoNoDisponible
 
 from django.db.models import Avg
+from django.db import connection
+
 
 class AuthGroup(models.Model):
     name = models.CharField(unique=True, max_length=150)
@@ -162,6 +164,10 @@ class Pasillobox(models.Model):
         managed = False
         db_table = 'pasillobox'
 
+for pasillo in Pasillobox.objects.all():
+    if pasillo.nombre:
+        pasillo.nombre = pasillo.nombre.title()
+        pasillo.save()
 
 class Profesional(models.Model):
     idprofesional = models.IntegerField(db_column='idProfesional', primary_key=True)  # Field name made lowercase.
